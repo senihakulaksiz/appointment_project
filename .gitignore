@@ -1,0 +1,21 @@
+# Python
+*.pyc
+__pycache__/
+*.log
+
+# Django
+db.sqlite3
+
+# Virtualenv
+venv/
+
+# PyCharm
+.idea/
+
+# Docker
+*.pid
+*.sock
+
+# Ortak medya / static dosyaları
+/media/
+staticfiles/
