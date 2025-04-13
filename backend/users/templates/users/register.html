@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Kayıt Ol</title>
+    <script>
+        // Öğretmen seçildiğinde branş dropdown'unu göster
+        function toggleSubjectField() {
+            const userType = document.getElementById("user_type").value;
+            const subjectDiv = document.getElementById("subject_div");
+            subjectDiv.style.display = userType === "teacher" ? "block" : "none";
+        }
+    </script>
+</head>
+<body>
+    <h2>Kayıt Ol</h2>
+    <form method="POST">
+        {% csrf_token %}
+
+        <label for="username">Kullanıcı Adı:</label><br>
+        <input type="text" name="username" required><br><br>
+
+        <label for="email">E-posta:</label><br>
+        <input type="email" name="email" required><br><br>
+
+        <label for="password">Şifre:</label><br>
+        <input type="password" name="password" required><br><br>
+
+        <label for="user_type">Kullanıcı Türü:</label><br>
+        <select name="user_type" id="user_type" onchange="toggleSubjectField()" required>
+            <option value="">Seçiniz</option>
+            <option value="student">Öğrenci</option>
+            <option value="teacher">Öğretmen</option>
+        </select><br><br>
+
+<div id="subject_div" style="display: none;">
+    <label for="subject">Branş:</label><br>
+    <select name="subject" required>
+        <option value="">Branş Seçiniz</option>
+        {% for lesson in lessons %}
+            <option value="{{ lesson.name }}">{{ lesson.name }}</option>
+        {% endfor %}
+    </select><br><br>
+</div>
+
+
+
+        <button type="submit">Kayıt Ol</button>
+    </form>
+</body>
+</html>

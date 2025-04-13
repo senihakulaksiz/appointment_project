@@ -1,21 +1,23 @@
 # Python
-*.pyc
 __pycache__/
-*.log
-
-# Django
-db.sqlite3
-
-# Virtualenv
+*.pyc
+*.pyo
+*.pyd
+*.env
+env/
 venv/
 
-# PyCharm
-.idea/
+# Django
+*.sqlite3
+db.sqlite3
 
 # Docker
-*.pid
-*.sock
+*.log
+postgres_data/
 
-# Ortak medya / static dosyaları
-/media/
-staticfiles/
+# IDE
+.vscode/
+.idea/
+
+# macOS
+.DS_Store

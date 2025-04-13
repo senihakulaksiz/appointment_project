@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Öğretmen Profili</title>
+</head>
+<body>
+    <h1>Hoş geldiniz, {{ teacher.user.username }}</h1>
+
+    <h2>Branşınız: {{ teacher.lesson.name }}</h2>
+
+    <h3>Boş Zamanlarınız:</h3>
+    {% if slots %}
+        <ul>
+        {% for slot in slots %}
+            <li>{{ slot.date }} - {{ slot.start_time }} / {{ slot.end_time }}</li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>Henüz boş zaman eklemediniz.</p>
+    {% endif %}
+
+    <a href="{% url 'teacher_appointments' %}">Randevularımı Görüntüle</a>
+</body>
+</html>
