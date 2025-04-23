@@ -22,5 +22,15 @@ services:
     ports:
       - "5433:5432"
 
+  ollama:
+    image: ollama/ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    tty: true
+
+
 volumes:
   postgres_data:
+  ollama_data:

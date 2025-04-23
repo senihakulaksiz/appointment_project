@@ -4,7 +4,10 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import CustomUser, Student, Teacher, Lesson
 from .models import AvailableSlot
+import requests
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+
 
 
 User = get_user_model()  # doğru yerde tanımladık
@@ -67,3 +70,23 @@ def role_based_redirect(request):
 @login_required
 def student_dashboard(request):
     return render(request, 'users/student_dashboard.html')
+
+
+@csrf_exempt
+def ask_llm(request):
+    prompt = request.GET.get("prompt", "Merhaba, nasıl yardımcı olabilirim?")
+
+    try:
+        response = requests.post(
+            "http://host.docker.internal:11434/api/generate",
+            json={
+                "model": "llama3",  # Kendi modelin buysa
+                "prompt": prompt,
+                "stream": False
+            }
+        )
+        result = response.json()
+        return JsonResponse({"response": result.get("response", "Yanıt alınamadı.")})
+
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
