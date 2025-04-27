@@ -19,7 +19,12 @@ class Student(models.Model):
 
 class Teacher(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    about = models.TextField(blank=True, null=True)
     lesson = models.ForeignKey(Lesson, on_delete=models.SET_NULL, null=True)
+    graduated_school = models.CharField(max_length=100, blank=True, null=True)
+    years_of_experience = models.PositiveIntegerField(blank=True, null=True)
+    expertise_area = models.CharField(max_length=100, blank=True, null=True)  # 🔥 yeni alan
+
     # isteğe bağlı: uzmanlık alanı vs.
 
 class AvailableSlot(models.Model):
@@ -39,4 +44,13 @@ class Appointment(models.Model):
     def __str__(self):
         return f"{self.student.user.username} -> {self.slot}"
 
+class LessonAnnouncement(models.Model):
+    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.SET_NULL, null=True, blank=True)
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.title
 

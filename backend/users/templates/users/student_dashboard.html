@@ -1,10 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-      <h1>Öğrenci Paneli</h1>
-</body>
-</html>
+<h3>Mevcut Ders İlanları</h3>
+{% for ann in announcements %}
+    <div>
+        <h4>{{ ann.title }}</h4>
+        <p>{{ ann.description }}</p>
+        <small>{{ ann.created_at }}</small><br>
+
+        {% if not ann.student %}
+            <form action="{% url 'join_announcement' ann.id %}" method="post" style="display:inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-success btn-sm">Katıl</button>
+            </form>
+        {% else %}
+            {% if ann.student.user == request.user %}
+                <span class="badge bg-success">Katıldınız</span>
+            {% else %}
+                <span class="badge bg-secondary">Dolu</span>
+            {% endif %}
+        {% endif %}
+    </div>
+    <hr>
+{% empty %}
+    <p>Şu anda aktif ders ilanı bulunmamaktadır.</p>
+{% endfor %}

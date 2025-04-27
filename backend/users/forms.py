@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser, Teacher, Student, Lesson
+from .models import CustomUser, Teacher, Student, Lesson, LessonAnnouncement
 
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -26,3 +26,23 @@ class CustomUserCreationForm(UserCreationForm):
                 lesson = self.cleaned_data['lesson']
                 Teacher.objects.create(user=user, lesson=lesson)
         return user
+class TeacherProfileForm(forms.ModelForm):
+    class Meta:
+        model = Teacher
+        fields = ['about', 'graduated_school', 'years_of_experience', 'expertise_area']
+        widgets = {
+            'about': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'graduated_school': forms.TextInput(attrs={'class': 'form-control'}),
+            'years_of_experience': forms.NumberInput(attrs={'class': 'form-control'}),
+            'expertise_area': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+
+class LessonAnnouncementForm(forms.ModelForm):
+    class Meta:
+        model = LessonAnnouncement
+        fields = ['title', 'description']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+        }
