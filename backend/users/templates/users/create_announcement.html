@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Yeni Ders İlanı Oluştur</title>
+</head>
+<body>
+
+<h2>Yeni Ders İlanı Oluştur</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">İlanı Yayınla</button>
+</form>
+
+<br>
+<a href="{% url 'teacher_dashboard' %}">Dashboard'a Geri Dön</a>
+
+</body>
+</html>

@@ -1,0 +1,57 @@
+<!-- templates/teacher_dashboard.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Öğretmen Paneli</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{% url 'teacher_dashboard' %}">Öğretmen Paneli</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'teacher_profile' %}">Profilim</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'create_announcement' %}">Ders İlanı Yayınla</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'logout' %}">Çıkış Yap</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+
+
+
+<div class="container mt-5">
+    <h2>Akış</h2>
+   {% if announcements %}
+        {% for ann in announcements %}
+        <div>
+            <h4>{{ ann.title }}</h4>
+            <p>{{ ann.description }}</p>
+            <small>{{ ann.created_at }}</small>
+        </div>
+        <hr>
+        {% endfor %}
+    {% else %}
+        <p>Henüz bir ilan oluşturmadınız.</p>
+    {% endif %}
+</div>
+
+
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>

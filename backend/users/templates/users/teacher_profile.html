@@ -1,25 +1,62 @@
+<!-- templates/teacher_profile.html -->
+{% load static %}
 <!DOCTYPE html>
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <title>Öğretmen Profili</title>
+    <title>Profilim</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
 </head>
 <body>
-    <h1>Hoş geldiniz, {{ teacher.user.username }}</h1>
 
-    <h2>Branşınız: {{ teacher.lesson.name }}</h2>
+<div class="container mt-5">
+  <h2>Profilim</h2>
 
-    <h3>Boş Zamanlarınız:</h3>
-    {% if slots %}
-        <ul>
-        {% for slot in slots %}
-            <li>{{ slot.date }} - {{ slot.start_time }} / {{ slot.end_time }}</li>
-        {% endfor %}
-        </ul>
-    {% else %}
-        <p>Henüz boş zaman eklemediniz.</p>
-    {% endif %}
+  <form method="POST" id="profile-form">
+    {% csrf_token %}
 
-    <a href="{% url 'teacher_appointments' %}">Randevularımı Görüntüle</a>
+    <div class="form-group mb-3">
+      <label for="id_about">Hakkımda</label>
+      {{ form.about }}
+    </div>
+
+
+    <div class="form-group mb-3">
+      <label for="id_graduated_school">Mezun Olduğu Okul</label>
+      {{ form.graduated_school }}
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="id_expertise_area">Branş</label>
+      {{ form.expertise_area }}
+    </div>
+
+    <div class="form-group mb-3">
+      <label for="id_years_of_experience">Yıl Deneyimi</label>
+      {{ form.years_of_experience }}
+    </div>
+
+    <button type="button" id="edit-btn" class="btn btn-secondary">Düzenle</button>
+    <button type="submit" id="save-btn" class="btn btn-primary" style="display:none;">Kaydet</button>
+  </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const editBtn = document.getElementById('edit-btn');
+    const saveBtn = document.getElementById('save-btn');
+    const inputs = document.querySelectorAll('#profile-form input, #profile-form select, #profile-form textarea');
+
+    // Başlangıçta inputları readonly yap
+    inputs.forEach(input => input.setAttribute('readonly', true));
+
+    editBtn.addEventListener('click', function() {
+        inputs.forEach(input => input.removeAttribute('readonly'));
+        editBtn.style.display = 'none';
+        saveBtn.style.display = 'inline-block';
+    });
+});
+</script>
+
 </body>
 </html>
