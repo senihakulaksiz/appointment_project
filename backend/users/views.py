@@ -36,22 +36,31 @@ def login_view(request):
     return render(request, "users/login.html", {"form": form})
 
 
+@login_required
+def role_redirect(request):
+    if hasattr(request.user, 'teacher'):
+        return redirect('teacher_dashboard')
+    elif hasattr(request.user, 'student'):
+        return redirect('student_dashboard')
+    else:
+        return redirect('login')
+
 def logout_view(request):
     logout(request)
     return redirect('login')
 
 # --- REGISTER VIEW ---
-@csrf_exempt
+@csrf_exempt  # Şu anda deneme amaçlı sorun değil
 def register_view(request):
     if request.method == "POST":
         username = request.POST.get("username")
         email = request.POST.get("email")
         password = request.POST.get("password")
         user_type = request.POST.get("user_type")
-        subject = request.POST.get("subject")
+        subject = request.POST.get("subject")  # sadece öğretmene lazım
 
         if not all([username, email, password, user_type]):
-            messages.error(request, "Tüm alanları doldurun.")
+            messages.error(request, "Lütfen tüm alanları doldurun.")
             return redirect("register")
 
         user = User.objects.create_user(username=username, email=email, password=password)
@@ -60,19 +69,23 @@ def register_view(request):
             user.is_student = True
             user.save()
             Student.objects.create(user=user)
+
         elif user_type == "teacher":
             user.is_teacher = True
             user.save()
-            lesson = Lesson.objects.get(name=subject)
-            Teacher.objects.create(user=user, lesson=lesson)
+            try:
+                lesson = Lesson.objects.get(name=subject)
+                Teacher.objects.create(user=user, lesson=lesson)
+            except Lesson.DoesNotExist:
+                messages.error(request, "Seçilen branş bulunamadı.")
+                user.delete()  # yanlış veri oluşmasın
+                return redirect("register")
 
         login(request, user)
         return redirect('role_redirect')
 
     lessons = Lesson.objects.all()
     return render(request, "users/register.html", {"lessons": lessons})
-
-
 # --- ROLE-BASED REDIRECT VIEW ---
 @login_required
 def role_based_redirect(request):
@@ -100,7 +113,8 @@ def teacher_dashboard(request):
 # --- STUDENT DASHBOARD VIEW ---
 @login_required
 def student_dashboard(request):
-    return render(request, 'users/student_dashboard.html')
+    announcements = LessonAnnouncement.objects.all()
+    return render(request, 'users/student_dashboard.html', {'announcements': announcements})
 
 
 # --- TEACHER PROFILE VIEW ---
@@ -124,6 +138,10 @@ def teacher_profile(request):
         'form': form
     }
     return render(request, 'users/teacher_profile.html', context)
+
+@login_required
+def student_profile(request):
+    return render(request, 'users/student_profile.html')
 
 
 # --- TEACHER APPOINTMENTS VIEW ---
@@ -195,3 +213,9 @@ def join_announcement(request, announcement_id):
 @login_required
 def chatbot_page(request):
     return render(request, 'users/chatbot.html')
+
+@login_required
+def my_lessons(request):
+    student = request.user.student
+    lessons = LessonAnnouncement.objects.filter(student=student)
+    return render(request, 'users/my_lessons.html', {'lessons': lessons})

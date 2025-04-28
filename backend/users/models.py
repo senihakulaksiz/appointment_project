@@ -3,6 +3,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+
+
 class CustomUser(AbstractUser):
     is_student = models.BooleanField(default=False)
     is_teacher = models.BooleanField(default=False)
@@ -14,18 +16,18 @@ class Lesson(models.Model):
         return self.name
 
 class Student(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    # isteğe bağlı: ekstra alanlar
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)  # ← BURASI
+
+    def __str__(self):
+        return self.user.username
 
 class Teacher(models.Model):
-    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)  # ← BURASI
     about = models.TextField(blank=True, null=True)
     lesson = models.ForeignKey(Lesson, on_delete=models.SET_NULL, null=True)
     graduated_school = models.CharField(max_length=100, blank=True, null=True)
     years_of_experience = models.PositiveIntegerField(blank=True, null=True)
-    expertise_area = models.CharField(max_length=100, blank=True, null=True)  # 🔥 yeni alan
-
-    # isteğe bağlı: uzmanlık alanı vs.
+    expertise_area = models.CharField(max_length=100, blank=True, null=True)
 
 class AvailableSlot(models.Model):
     teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
@@ -53,4 +55,3 @@ class LessonAnnouncement(models.Model):
 
     def __str__(self):
         return self.title
-
