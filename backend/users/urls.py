@@ -10,9 +10,13 @@ urlpatterns = [
     path('teacher/profile/', views.teacher_profile, name='teacher_profile'),
     path('teacher/appointments/', views.teacher_appointments, name='teacher_appointments'),
     path('student/dashboard/', views.student_dashboard, name='student_dashboard'),
+    path('student/profile/', views.student_profile, name='student_profile'),
     path('teacher/announcement/new/', views.create_announcement, name='create_announcement'),
     path('student/join-announcement/<int:announcement_id>/', views.join_announcement, name='join_announcement'),
     path("ask-llm/", views.ask_llm, name="ask_llm"),
     path('chatbot/', views.chatbot_page, name='chatbot_page'),
+    path('redirect/', views.role_redirect, name='role_redirect'),
+    path('student/my-lessons/', views.my_lessons, name='my_lessons'),
+
 
 ]
