@@ -131,3 +131,7 @@ AUTH_USER_MODEL = 'users.CustomUser'
 LOGIN_REDIRECT_URL = '/users/redirect/'
 
 LOGOUT_REDIRECT_URL = '/users/login/'
+
+# Celery Ayarları
+CELERY_BROKER_URL = 'redis://redis:6379/0'
+

@@ -10,6 +10,8 @@ services:
       - "8010:8000"
     depends_on:
       - db
+      - redis
+      - celery
 
   db:
     image: postgres:15
@@ -29,6 +31,20 @@ services:
     volumes:
       - ollama_data:/root/.ollama
     tty: true
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  celery:
+    build: ./backend
+    command: celery -A config worker --loglevel=info
+    volumes:
+      - ./backend:/code
+    depends_on:
+      - db
+      - redis
 
 
 volumes:
