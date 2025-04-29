@@ -313,3 +313,21 @@ def view_teacher_profile(request, teacher_id):
         return redirect('student_dashboard')
 
     return render(request, 'users/view_teacher_profile.html', {'teacher': teacher})
+
+@login_required
+def my_announcements(request):
+    teacher = request.user.teacher
+
+    # 1. Kendi oluşturduğu ilanlar
+    created_announcements = LessonAnnouncement.objects.filter(teacher=teacher).order_by('-created_at')
+
+    # 2. Başvurusunu onayladığı ilanlar
+    approved_announcements = LessonAnnouncement.objects.filter(teacher=teacher, is_approved=True).order_by('-created_at')
+    pending_announcements = LessonAnnouncement.objects.filter(teacher=teacher, is_approved=False, student__isnull=False).order_by('-created_at')
+
+    context = {
+        'created_announcements': created_announcements,
+        'approved_announcements': approved_announcements,
+        'pending_announcements': pending_announcements,
+    }
+    return render(request, 'users/my_announcements.html', context)

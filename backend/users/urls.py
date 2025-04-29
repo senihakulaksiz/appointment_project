@@ -21,6 +21,8 @@ urlpatterns = [
     path('student/apply-to-announcement/<int:announcement_id>/', views.apply_to_announcement, name='apply_to_announcement'),
     path('teacher/approve-application/<int:announcement_id>/', views.approve_application, name='approve_application'),
     path('teacher/profile/<int:teacher_id>/', views.view_teacher_profile, name='view_teacher_profile'),
+    path('teacher/my-announcements/', views.my_announcements, name='my_announcements'),
+
 
 
 
