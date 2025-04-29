@@ -39,19 +39,38 @@
 
 <div class="container mt-5">
     <h2>Akış</h2>
-   {% if announcements %}
+    {% if announcements %}
         {% for ann in announcements %}
-        <div>
-            <h4>{{ ann.title }}</h4>
-            <p>{{ ann.description }}</p>
-            <small>{{ ann.created_at }}</small>
+        <div class="card mb-3">
+            <div class="card-body">
+                <h4 class="card-title">{{ ann.title }}</h4>
+                <p class="card-text">{{ ann.description }}</p>
+                <!-- <small class="text-muted">{{ ann.created_at }}</small> -->
+
+                {% if ann.student %}
+                    <hr>
+                    <p><strong>Başvuran Öğrenci:</strong> {{ ann.student.user.username }}</p>
+                    <p><strong>İstekli Tarih:</strong> {{ ann.student_requested_date }}</p>
+                    <p><strong>İstekli Saat:</strong> {{ ann.student_requested_time }}</p>
+                    <p><strong>Sınıf Seviyesi:</strong> {{ ann.student_class_level }}</p>
+                    <p><strong>İstek Detayı:</strong> {{ ann.student_request_detail }}</p>
+
+                    {% if not ann.is_approved %}
+                        <a href="{% url 'approve_application' ann.id %}" class="btn btn-success btn-sm">Başvuruyu Onayla</a>
+                    {% else %}
+                        <span class="badge bg-success">Onaylandı</span>
+                    {% endif %}
+                {% else %}
+                    <p class="text-muted mt-2">Henüz başvuru yok.</p>
+                {% endif %}
+            </div>
         </div>
-        <hr>
         {% endfor %}
     {% else %}
         <p>Henüz bir ilan oluşturmadınız.</p>
     {% endif %}
 </div>
+
 
 
 <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>

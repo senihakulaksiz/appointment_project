@@ -53,5 +53,14 @@ class LessonAnnouncement(models.Model):
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
+    # Öğrencinin başvururken dolduracağı yeni alanlar:
+    student_requested_date = models.DateField(null=True, blank=True)
+    student_requested_time = models.TimeField(null=True, blank=True)
+    student_class_level = models.CharField(max_length=50, null=True, blank=True)
+    student_request_detail = models.TextField(null=True, blank=True)
+
+    # Başvuru kabul durumu:
+    is_approved = models.BooleanField(default=False)
+
     def __str__(self):
         return self.title

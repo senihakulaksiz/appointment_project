@@ -46,3 +46,15 @@ class LessonAnnouncementForm(forms.ModelForm):
             'title': forms.TextInput(attrs={'class': 'form-control'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
         }
+
+
+class ApplyToAnnouncementForm(forms.ModelForm):
+    class Meta:
+        model = LessonAnnouncement
+        fields = ['student_requested_date', 'student_requested_time', 'student_class_level', 'student_request_detail']
+        widgets = {
+            'student_requested_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
+            'student_requested_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
+            'student_class_level': forms.TextInput(attrs={'class': 'form-control'}),
+            'student_request_detail': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+        }
