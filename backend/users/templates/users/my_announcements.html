@@ -45,6 +45,10 @@
                     <h4>{{ ann.title }}</h4>
                     <p>{{ ann.description }}</p>
                     <small class="text-muted">Oluşturulma: {{ ann.created_at|date:"d M Y H:i" }}</small>
+                    <form method="post" action="{% url 'delete_announcement' ann.id %}" style="margin-top: 10px;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Bu ilanı silmek istediğinize emin misiniz?')">Sil</button>
+                    </form>
                 </div>
             </div>
         {% endfor %}
