@@ -41,23 +41,43 @@
 
 
 <div class="container mt-5">
-    <h2>Akış</h2>
+    <h2 class="mb-1">Hoş geldiniz, {{ request.user.username }} 👋</h2>
+    <p class="text-muted mb-4">Platformda yayınlanan tüm ilanları aşağıdan inceleyebilirsiniz.</p>
+    <div class="row text-center mb-4">
+        <div class="col-md-4 offset-md-4">
+            <div class="card p-3 shadow-sm border-primary d-flex justify-content-center align-items-center">
+                <h5 class="mb-0 text-primary fw-light">Toplam İlan Sayısı: {{ announcements.count }}</h5>
+            </div>
+        </div>
+    </div>
+
+
     {% if announcements %}
         {% for ann in announcements %}
-        <div class="card mb-3">
+        <div class="card mb-4 shadow-sm">
             <div class="card-body">
-                <h4 class="card-title">{{ ann.title }}</h4>
+                <div class="d-flex justify-content-between">
+                    <h5 class="card-title mb-1">{{ ann.title }}</h5>
+                    <small class="text-muted">{{ ann.created_at|date:"d M Y H:i" }}</small>
+                </div>
+
                 <p class="card-text">{{ ann.description }}</p>
                 <hr>
-                <p><strong>Öğretmen:</strong> {{ ann.teacher.user.username }}</p>
-                <p><strong>Branş:</strong> {{ ann.teacher.lesson.name }}</p>
+                <p class="mb-1"><strong>Öğretmen:</strong> {{ ann.teacher.user.username }}</p>
+                <p class="mb-2"><strong>Branş:</strong> {{ ann.teacher.lesson.name }}</p>
                 <a href="{% url 'view_teacher_profile' ann.teacher.id %}" class="btn btn-outline-primary btn-sm">Profilini Gör</a>
             </div>
         </div>
 
+
         {% endfor %}
     {% else %}
-        <p>Henüz bir ilan oluşturmadınız.</p>
+        <div class="alert alert-info text-center mt-4">
+            Şu anda sistemde yayınlanan bir ders ilanı bulunmuyor.
+            <br>İlk dersi sen yayınlamak ister misin? 🚀
+            <br><a href="{% url 'create_announcement' %}" class="btn btn-primary mt-2">Ders İlanı Yayınla</a>
+        </div>
+
     {% endif %}
 </div>
 
