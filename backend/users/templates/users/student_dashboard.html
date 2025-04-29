@@ -36,6 +36,31 @@
 </nav>
 <!-- Navbar Bitişi -->
 
+<div class="container mt-4">
+    <form method="get" class="row g-3">
+        <div class="col-md-5">
+            <select name="branch" class="form-select">
+        <option value="">Branş Seçin</option>
+        {% for lesson in lessons %}
+            <option value="{{ lesson.name }}">{{ lesson.name }}</option>
+        {% endfor %}
+    </select>
+        </div>
+        <div class="col-md-5">
+            <input type="text" name="teacher_name" class="form-control" placeholder="Öğretmen İsmi Ara (Örn: Ali)">
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Ara</button>
+        </div>
+    </form>
+</div>
+
+<hr class="my-4">
+
+
+
+
+
 <div class="container mt-5">
     <h3>Mevcut Ders İlanları</h3>
 
@@ -46,6 +71,12 @@
                 <p class="card-text">{{ ann.description }}</p>
                 <!-- <small class="text-muted">{{ ann.created_at }}</small> -->
 
+                <p><strong>Öğretmen:</strong> {{ ann.teacher.user.username }}
+                    <a href="{% url 'view_teacher_profile' ann.teacher.id %}" class="btn btn-link btn-sm">Profili Gör</a>
+                </p>
+                <p><strong>Branş:</strong> {{ ann.lesson.name }}</p>
+
+
                 {% if not ann.student %}
                     <!-- Eğer ilana öğrenci atanmadıysa katılma şansı var -->
                     <a href="{% url 'apply_to_announcement' ann.id %}" class="btn btn-success btn-sm">Başvur</a>
@@ -53,7 +84,7 @@
                 {% else %}
                     {% if ann.student.user == request.user %}
                         <!-- Eğer bu ilana şu anki öğrenci katıldıysa -->
-                        <span class="badge bg-success">Katıldınız</span>
+                        <span class="badge bg-info text-dark">Katıldınız</span>
                     {% else %}
                         <span class="badge bg-secondary">Dolu</span>
                     {% endif %}
