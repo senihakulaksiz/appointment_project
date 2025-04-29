@@ -7,10 +7,50 @@
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
 </head>
 <body>
+
+<!-- Navbar Başlangıcı -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{% url 'student_dashboard' %}">Öğrenci Paneli</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'student_profile' %}">Profilim</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'my_lessons' %}">Katıldığım Dersler</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'chatbot_page' %}">Chatbot</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'logout' %}">Çıkış Yap</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+<!-- Navbar Bitişi -->
+
+<!-- Ana İçerik -->
+
 <div class="container mt-5">
     <h2>Öğrenci Profilim</h2>
-    <p>Buraya öğrencinin profil bilgileri gelecek.</p>
+    <ul class="list-group">
+        <li class="list-group-item"><strong>Kullanıcı Adı:</strong> {{ username }}</li>
+        <li class="list-group-item"><strong>E-posta:</strong> {{ email }}</li>
+        <li class="list-group-item"><strong>Kayıt Tarihi:</strong> {{ date_joined|date:"d M Y H:i" }}</li>
+    </ul>
+
+    <div class="mt-4">
+        <a href="{% url 'student_change_password' %}" class="btn btn-warning">Şifremi Değiştir</a>
+    </div>
 </div>
+
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
 </body>
 </html>
-ta charset="UTF-8">

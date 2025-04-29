@@ -9,6 +9,8 @@ from django.contrib.auth import logout
 from .models import CustomUser, Student, Teacher, Lesson, AvailableSlot, LessonAnnouncement
 from .forms import TeacherProfileForm, LessonAnnouncementForm
 from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
 
 
 User = get_user_model()
@@ -141,7 +143,29 @@ def teacher_profile(request):
 
 @login_required
 def student_profile(request):
-    return render(request, 'users/student_profile.html')
+    user = request.user
+    context = {
+        'username': user.username,
+        'email': user.email,
+        'date_joined': user.date_joined,
+    }
+    return render(request, 'users/student_profile.html', context)
+
+@login_required
+def student_change_password(request):
+    if request.method == 'POST':
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Şifre değişince login kalmaya devam etsin
+            messages.success(request, 'Şifreniz başarıyla güncellendi!')
+            return redirect('student_profile')
+        else:
+            messages.error(request, 'Lütfen hataları düzeltin.')
+    else:
+        form = PasswordChangeForm(request.user)
+
+    return render(request, 'users/change_password.html', {'form': form})
 
 
 # --- TEACHER APPOINTMENTS VIEW ---

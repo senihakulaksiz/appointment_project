@@ -17,6 +17,8 @@ urlpatterns = [
     path('chatbot/', views.chatbot_page, name='chatbot_page'),
     path('redirect/', views.role_redirect, name='role_redirect'),
     path('student/my-lessons/', views.my_lessons, name='my_lessons'),
+    path('student/change-password/', views.student_change_password, name='student_change_password'),
+
 
 
 ]
