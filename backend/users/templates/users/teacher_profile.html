@@ -8,6 +8,34 @@
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
 </head>
 <body>
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{% url 'teacher_dashboard' %}">Öğretmen Paneli</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'teacher_profile' %}">Profilim</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'my_announcements' %}">İlanlarım</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'create_announcement' %}">Ders İlanı Yayınla</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'chatbot_page' %}">Chatbot</a>  <!-- 🔥 Burası -->
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'logout' %}">Çıkış Yap</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
 
 <div class="container mt-5">
   <h2>Profilim</h2>
