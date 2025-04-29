@@ -38,37 +38,74 @@
 </nav>
 
 <div class="container mt-5">
-  <h2>Profilim</h2>
+  <div class="row">
+    <!-- SOL: Öğretmen Bilgileri Kartı -->
+    <div class="col-md-4 mb-4">
+      <div class="card p-3 shadow-sm">
+        <div class="text-center mb-3">
+          <img src="https://www.w3schools.com/howto/img_avatar.png" class="rounded-circle" width="100" height="100" alt="Profil Fotoğrafı">
+        </div>
+        <h5 class="text-center mb-3">📘 Öğretmen Bilgileri</h5>
+        <p><strong>Kullanıcı Adı:</strong> {{ request.user.username }}</p>
+        <p><strong>E-posta:</strong> {{ request.user.email }}</p>
+        <p><strong>Branş:</strong> {{ teacher.lesson.name }}</p>
+        <p><strong>Kayıt Tarihi:</strong> {{ request.user.date_joined|date:"d M Y H:i" }}</p>
+        {% if teacher.years_of_experience %}
+          <hr>
+          <div class="text mt-2">
+            <span class="me-2">🎖 Seviye Rozeti:</span>
+            {% if teacher.years_of_experience <= 1 %}
+              <span class="text-warning me-1">🟡</span><span>Yeni Öğretmen</span>
+            {% elif teacher.years_of_experience <= 5 %}
+              <span class="text-primary me-1">🔵</span><span>Deneyimli Öğretmen</span>
+            {% elif teacher.years_of_experience <= 9 %}
+              <span class="text-secondary me-1">🟣</span><span>Kıdemli Öğretmen</span>
+            {% else %}
+              <span class="text-success me-1">🟢</span><span>Uzman Öğretmen</span>
+            {% endif %}
+          </div>
+        {% endif %}
 
-  <form method="POST" id="profile-form">
-    {% csrf_token %}
-
-    <div class="form-group mb-3">
-      <label for="id_about">Hakkımda</label>
-      {{ form.about }}
+      </div>
+      <div class="text-center mt-3">
+        <a href="{% url 'student_change_password' %}" class="btn btn-warning">Şifremi Değiştir</a>
+      </div>
     </div>
 
 
-    <div class="form-group mb-3">
-      <label for="id_graduated_school">Mezun Olduğu Okul</label>
-      {{ form.graduated_school }}
+    <!-- SAĞ: Profil Formu -->
+    <div class="col-md-8">
+      <h2 class="mb-4">Profilim</h2>
+      <form method="POST" id="profile-form">
+        {% csrf_token %}
+
+        <div class="form-group mb-3">
+          <label for="id_about">Hakkımda</label>
+          {{ form.about }}
+        </div>
+
+        <div class="form-group mb-3">
+          <label for="id_graduated_school">Mezun Olduğu Okul</label>
+          {{ form.graduated_school }}
+        </div>
+
+        <div class="form-group mb-3">
+          <label>Uzmanlık Alanı</label>
+          {{ form.expertise_area }}
+        </div>
+
+        <div class="form-group mb-3">
+          <label for="id_years_of_experience">Yıl Deneyimi</label>
+          {{ form.years_of_experience }}
+        </div>
+
+        <button type="button" id="edit-btn" class="btn btn-secondary">Düzenle</button>
+        <button type="submit" id="save-btn" class="btn btn-primary" style="display:none;">Kaydet</button>
+      </form>
     </div>
-
-    <div class="form-group mb-3">
-      <label>Branş</label>
-      <input type="text" class="form-control" value="{{ teacher.lesson.name }}" readonly>
-    </div>
-
-
-    <div class="form-group mb-3">
-      <label for="id_years_of_experience">Yıl Deneyimi</label>
-      {{ form.years_of_experience }}
-    </div>
-
-    <button type="button" id="edit-btn" class="btn btn-secondary">Düzenle</button>
-    <button type="submit" id="save-btn" class="btn btn-primary" style="display:none;">Kaydet</button>
-  </form>
+  </div>
 </div>
+
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
