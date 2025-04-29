@@ -373,6 +373,19 @@ def apply_to_announcement(request, announcement_id):
 
     return render(request, 'users/apply_to_announcement.html', {'form': form, 'announcement': announcement})
 
+@login_required
+def delete_announcement(request, announcement_id):
+    teacher = request.user.teacher
+    try:
+        announcement = LessonAnnouncement.objects.get(id=announcement_id, teacher=teacher)
+        announcement.delete()
+        messages.success(request, "İlan başarıyla silindi.")
+    except LessonAnnouncement.DoesNotExist:
+        messages.error(request, "Silinecek ilan bulunamadı.")
+
+    return redirect('my_announcements')
+
+
 
 @login_required
 def approve_application(request, announcement_id):
