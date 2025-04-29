@@ -1,58 +1,94 @@
 <!DOCTYPE html>
 <html lang="tr">
+{% load static %}
 <head>
     <meta charset="UTF-8">
     <title>Kayıt Ol</title>
-<script>
-    function toggleSubjectField() {
-        const userType = document.getElementById("user_type").value;
-        const subjectDiv = document.getElementById("subject_div");
-        const subjectSelect = document.querySelector('select[name="subject"]');
-
-        if (userType === "teacher") {
-            subjectDiv.style.display = "block";
-            subjectSelect.required = true;  // öğretmen için required
-        } else {
-            subjectDiv.style.display = "none";
-            subjectSelect.required = false;  // öğrenci için required kaldır
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <style>
+        body {
+            background-color: #f8f9fa;
         }
-    }
-</script>
+    </style>
+    <script>
+        function toggleSubjectField() {
+            const userType = document.getElementById("user_type").value;
+            const subjectDiv = document.getElementById("subject_div");
+            const subjectSelect = document.querySelector('select[name="subject"]');
+
+            if (userType === "teacher") {
+                subjectDiv.style.display = "block";
+                subjectSelect.required = true;
+            } else {
+                subjectDiv.style.display = "none";
+                subjectSelect.required = false;
+            }
+        }
+    </script>
 </head>
-<body>
-    <h2>Kayıt Ol</h2>
-    <form method="POST" action="{% url 'register' %}">
+<body style="background: linear-gradient(to right, #f8f9fa, #e9ecef); min-height: 100vh; display: flex; justify-content: center; align-items: center;">
+
+<div class="container" style="max-width: 500px;">
+    <div class="text-center mb-4">
+        <h2 style="font-weight: 600; animation: fadeInDown 0.8s ease-in-out;">Kayıt Ol</h2>
+    </div>
+
+    <form method="POST" action="{% url 'register' %}" class="shadow-lg p-5 rounded bg-white border">
         {% csrf_token %}
 
-        <label for="username">Kullanıcı Adı:</label><br>
-        <input type="text" name="username" required><br><br>
+        <div class="mb-3">
+            <label for="username" class="form-label">Kullanıcı Adı:</label>
+            <input type="text" name="username" class="form-control" required>
+        </div>
 
-        <label for="email">E-posta:</label><br>
-        <input type="email" name="email" required><br><br>
+        <div class="mb-3">
+            <label for="email" class="form-label">E-posta:</label>
+            <input type="email" name="email" class="form-control" required>
+        </div>
 
-        <label for="password">Şifre:</label><br>
-        <input type="password" name="password" required><br><br>
+        <div class="mb-3">
+            <label for="password" class="form-label">Şifre:</label>
+            <input type="password" name="password" class="form-control" required>
+        </div>
 
-        <label for="user_type">Kullanıcı Türü:</label><br>
-        <select name="user_type" id="user_type" onchange="toggleSubjectField()" required>
-            <option value="">Seçiniz</option>
-            <option value="student">Öğrenci</option>
-            <option value="teacher">Öğretmen</option>
-        </select><br><br>
+        <div class="mb-3">
+            <label for="user_type" class="form-label">Kullanıcı Türü:</label>
+            <select name="user_type" id="user_type" onchange="toggleSubjectField()" class="form-select" required>
+                <option value="">Seçiniz</option>
+                <option value="student">Öğrenci</option>
+                <option value="teacher">Öğretmen</option>
+            </select>
+        </div>
 
-<div id="subject_div" style="display: none;">
-    <label for="subject">Branş:</label><br>
-    <select name="subject" required>
-        <option value="">Branş Seçiniz</option>
-        {% for lesson in lessons %}
-            <option value="{{ lesson.name }}">{{ lesson.name }}</option>
-        {% endfor %}
-    </select><br><br>
+        <div id="subject_div" class="mb-3" style="display: none;">
+            <label for="subject" class="form-label">Branş:</label>
+            <select name="subject" class="form-select">
+                <option value="">Branş Seçiniz</option>
+                {% for lesson in lessons %}
+                    <option value="{{ lesson.name }}">{{ lesson.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="d-grid">
+            <button type="submit" class="btn btn-primary btn-lg" style="transition: background 0.3s;">Kayıt Ol</button>
+        </div>
+    </form>
+
+    <div class="text-center mt-3">
+        <p>Zaten hesabınız var mı? <a href="{% url 'login' %}">Giriş Yapın</a></p>
+    </div>
 </div>
 
+<!-- Küçük fade-in animasyonu -->
+<style>
+@keyframes fadeInDown {
+  0% { opacity: 0; transform: translateY(-20px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+</style>
 
-
-        <button type="submit">Kayıt Ol</button>
-    </form>
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
 </body>
+
 </html>

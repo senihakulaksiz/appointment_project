@@ -1,18 +1,45 @@
 <!DOCTYPE html>
 <html lang="tr">
+{% load static %}
 <head>
     <meta charset="UTF-8">
     <title>Giriş Yap</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <style>
+        body {
+            background: linear-gradient(to right, #f8f9fa, #e9ecef);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
 <body>
-    <h2>Giriş Yap</h2>
 
-    <form method="post">
+<div class="container" style="max-width: 400px;">
+    <div class="text-center mb-4">
+        <h2 style="animation: fadeInUp 0.8s ease-in-out;">Giriş Yap</h2>
+    </div>
+
+    <form method="post" class="shadow-lg p-4 rounded bg-white border">
         {% csrf_token %}
         {{ form.as_p }}
-        <button type="submit">Giriş Yap</button>
+
+        <div class="d-grid mt-3">
+            <button type="submit" class="btn btn-primary btn-lg">Giriş Yap</button>
+        </div>
     </form>
 
-    <p>Hesabınız yok mu? <a href="{% url 'register' %}">Kayıt olun</a></p>
+    <div class="text-center mt-3">
+        <p>Hesabınız yok mu? <a href="{% url 'register' %}">Kayıt olun</a></p>
+    </div>
+</div>
+
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
 </body>
 </html>
