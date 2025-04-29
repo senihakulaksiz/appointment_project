@@ -105,7 +105,7 @@ def role_based_redirect(request):
 @login_required
 def teacher_dashboard(request):
     if request.user.is_teacher:
-        announcements = LessonAnnouncement.objects.filter(teacher=request.user.teacher).order_by('-created_at')
+        announcements = LessonAnnouncement.objects.all().order_by('-created_at')
         return render(request, 'users/teacher_dashboard.html', {'announcements': announcements})
     else:
         return redirect('student_dashboard')
