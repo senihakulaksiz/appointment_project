@@ -11,6 +11,7 @@ from .forms import TeacherProfileForm, LessonAnnouncementForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
+from .forms import ApplyToAnnouncementForm
 
 
 User = get_user_model()
@@ -243,3 +244,45 @@ def my_lessons(request):
     student = request.user.student
     lessons = LessonAnnouncement.objects.filter(student=student)
     return render(request, 'users/my_lessons.html', {'lessons': lessons})
+
+@login_required
+def apply_to_announcement(request, announcement_id):
+    if not request.user.is_student:
+        return redirect('teacher_dashboard')  # Güvenlik: Öğretmen başvuramasın
+
+    try:
+        announcement = LessonAnnouncement.objects.get(id=announcement_id, student__isnull=True)
+    except LessonAnnouncement.DoesNotExist:
+        messages.error(request, "Bu ilana başvuramazsınız.")
+        return redirect('student_dashboard')
+
+    if request.method == 'POST':
+        form = ApplyToAnnouncementForm(request.POST, instance=announcement)
+        if form.is_valid():
+            announcement = form.save(commit=False)
+            announcement.student = request.user.student
+            announcement.save()
+            messages.success(request, "Başvurunuz başarıyla alındı!")
+            return redirect('student_dashboard')
+    else:
+        form = ApplyToAnnouncementForm()
+
+    return render(request, 'users/apply_to_announcement.html', {'form': form, 'announcement': announcement})
+
+
+@login_required
+def approve_application(request, announcement_id):
+    if not request.user.is_teacher:
+        return redirect('student_dashboard')  # Güvenlik: Sadece öğretmen onaylayabilir
+
+    try:
+        announcement = LessonAnnouncement.objects.get(id=announcement_id, teacher=request.user.teacher, student__isnull=False)
+    except LessonAnnouncement.DoesNotExist:
+        messages.error(request, "Onaylanacak uygun başvuru bulunamadı.")
+        return redirect('teacher_dashboard')
+
+    announcement.is_approved = True
+    announcement.save()
+
+    messages.success(request, "Başvuru başarıyla onaylandı!")
+    return redirect('teacher_dashboard')

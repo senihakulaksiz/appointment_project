@@ -44,14 +44,12 @@
             <div class="card-body">
                 <h4 class="card-title">{{ ann.title }}</h4>
                 <p class="card-text">{{ ann.description }}</p>
-                <small class="text-muted">{{ ann.created_at }}</small><br><br>
+                <!-- <small class="text-muted">{{ ann.created_at }}</small> -->
 
                 {% if not ann.student %}
                     <!-- Eğer ilana öğrenci atanmadıysa katılma şansı var -->
-                    <form action="{% url 'join_announcement' ann.id %}" method="post" style="display:inline;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-success btn-sm">Katıl</button>
-                    </form>
+                    <a href="{% url 'apply_to_announcement' ann.id %}" class="btn btn-success btn-sm">Başvur</a>
+
                 {% else %}
                     {% if ann.student.user == request.user %}
                         <!-- Eğer bu ilana şu anki öğrenci katıldıysa -->
