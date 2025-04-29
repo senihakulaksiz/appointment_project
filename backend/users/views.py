@@ -191,15 +191,103 @@ def teacher_appointments(request):
 
 # --- LLM İSTEĞİ ATMA (Ollama İÇİN) ---
 @csrf_exempt
+@login_required
 def ask_llm(request):
     user_prompt = request.POST.get("prompt", "Merhaba, nasıl yardımcı olabilirim?")
-    prompt = f"Bu soruya sadece Türkçe olarak cevap ver: {user_prompt}"
 
+    # 🔒 Tüm veri alanlarını varsayılan olarak boş ayarla (hata riskini sıfırla)
+    katildigi_dersler = "Yok"
+    basvurabilecegi_dersler = "Yok"
+    onay_bekleyen_basvurular = "Yok"
+    yayinladigi_dersler = "Yok"
+    basvuran_ogrenciler = "Yok"
+    yayinladigi_branşlar = "Yok"
+
+    # 👩‍🎓 Öğrenci ise
+    if hasattr(request.user, 'student'):
+        # Katıldığı onaylanmış dersler
+        lessons_joined = LessonAnnouncement.objects.filter(student=request.user.student, is_approved=True)
+        if lessons_joined.exists():
+            katildigi_dersler = "\n".join([
+                f"- {l.lesson.name} (Öğretmen: {l.teacher.user.username})" for l in lessons_joined
+            ])
+
+        # Başvurabileceği boş dersler
+        available_lessons = LessonAnnouncement.objects.filter(student__isnull=True)
+        if available_lessons.exists():
+            basvurabilecegi_dersler = "\n".join([
+                f"- {l.lesson.name} (Öğretmen: {l.teacher.user.username})" for l in available_lessons
+            ])
+
+        # Onay bekleyen başvurular
+        pending_lessons = LessonAnnouncement.objects.filter(student=request.user.student, is_approved=False)
+        if pending_lessons.exists():
+            onay_bekleyen_basvurular = "\n".join([
+                f"- {l.lesson.name} (Öğretmen: {l.teacher.user.username})" for l in pending_lessons
+            ])
+
+    # 👨‍🏫 Öğretmen ise
+    elif hasattr(request.user, 'teacher'):
+        # Yayınladığı ders ilanları
+        teacher_announcements = LessonAnnouncement.objects.filter(teacher=request.user.teacher)
+        if teacher_announcements.exists():
+            yayinladigi_dersler = "\n".join([
+                f"- {l.lesson.name} (Öğrenci: {l.student.user.username if l.student else 'Henüz başvuru yok'})" for l in teacher_announcements
+            ])
+
+        # Başvuru almış ama onaylanmamış olanlar
+        applications_pending = LessonAnnouncement.objects.filter(
+            teacher=request.user.teacher, student__isnull=False, is_approved=False
+        )
+        if applications_pending.exists():
+            basvuran_ogrenciler = "\n".join([
+                f"- {l.lesson.name} (Başvuran: {l.student.user.username})" for l in applications_pending
+            ])
+
+        # Yayınladığı branşlar
+        lesson = getattr(request.user.teacher, 'lesson', None)
+        if lesson:
+            yayinladigi_branşlar = f"- {lesson.name}"
+
+    # 🧠 LLM'e gönderilecek prompt
+    prompt = (
+        f"Sen bir özel ders platformunun akıllı sohbet asistanısın. Kullanıcılara ders katılımı, başvurular, "
+        f"ilan durumu ve öğretmen profilleri hakkında yardımcı olursun.\n\n"
+        f"Kullanıcının mevcut durumu:\n"
+        f"- Katıldığı Dersler:\n{katildigi_dersler}\n"
+        f"- Başvurabileceği Dersler:\n{basvurabilecegi_dersler}\n"
+        f"- Onay Bekleyen Başvurular:\n{onay_bekleyen_basvurular}\n"
+        f"- Yayınladığı Dersler:\n{yayinladigi_dersler}\n"
+        f"- Başvuran Öğrenciler:\n{basvuran_ogrenciler}\n"
+        f"- Yayınladığı Branşlar:\n{yayinladigi_branşlar}\n\n"
+
+        f"Örnek soru-cevap:\n"
+        f"Soru: Katıldığım ders var mı?\n"
+        f"Cevap: Evet, kayıtlı olduğunuz ders(ler): Matematik (Öğretmen: Ahmet Hoca)\n\n"
+        f"Soru: Yayınladığım derse başvuran oldu mu?\n"
+        f"Cevap: Evet, Türkçe dersi için Ayşe öğrenci olarak başvurmuş durumda.\n\n"
+
+        f"Kullanıcının gerçek sorusu:\n\"{user_prompt}\"\n\n"
+        f"Yalnızca verilen bilgilere dayanarak açık, anlaşılır ve kibar bir Türkçe yanıt ver. "
+        f"Uydurma bilgi verme, tahmin yapma."
+        f"Kullanıcının gerçek sorusu:\n\"{user_prompt}\"\n\n"
+        f"Yalnızca yukarıdaki bilgilere dayanarak cevap ver. "
+        f"Verilen bilgilere göre:\n"
+        f"- Açık ve kısa konuş\n"
+        f"- Aynı şeyi tekrar etme\n"
+        f"- Gereksiz cümle kurma\n"
+        f"- Bilgi yoksa 'ilgili bilgi bulunamadı' de\n"
+        f"- Resmiyet değil, yardımcı olmayı amaçlayan kullanıcı dostu bir ton kullan\n"
+
+
+    )
+
+    # 🔁 LLM ile iletişim
     try:
         response = requests.post(
             "http://host.docker.internal:11434/api/generate",
             json={
-                "model": "llama3",  # veya hangi model yüklüyse
+                "model": "llama3",
                 "prompt": prompt,
                 "stream": False
             }
@@ -208,7 +296,6 @@ def ask_llm(request):
         return JsonResponse({"response": result.get("response", "Cevap alınamadı.")})
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
-
 
 @login_required
 def create_announcement(request):
