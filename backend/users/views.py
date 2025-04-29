@@ -242,8 +242,12 @@ def chatbot_page(request):
 @login_required
 def my_lessons(request):
     student = request.user.student
-    lessons = LessonAnnouncement.objects.filter(student=student)
-    return render(request, 'users/my_lessons.html', {'lessons': lessons})
+    approved_lessons = LessonAnnouncement.objects.filter(student=student, is_approved=True).order_by('student_requested_date', 'student_requested_time')
+    pending_lessons = LessonAnnouncement.objects.filter(student=student, is_approved=False)
+    return render(request, 'users/my_lessons.html', {
+        'approved_lessons': approved_lessons,
+        'pending_lessons': pending_lessons
+    })
 
 @login_required
 def apply_to_announcement(request, announcement_id):
