@@ -117,7 +117,19 @@ def teacher_dashboard(request):
 @login_required
 def student_dashboard(request):
     announcements = LessonAnnouncement.objects.all()
-    return render(request, 'users/student_dashboard.html', {'announcements': announcements})
+    lessons = Lesson.objects.all()
+
+    # Filtre veya arama varsa
+    branch = request.GET.get('branch')
+    teacher_name = request.GET.get('teacher_name')
+
+    if branch:
+        announcements = announcements.filter(lesson__name=branch)
+
+    if teacher_name:
+        announcements = announcements.filter(teacher__user__username__icontains=teacher_name)
+
+    return render(request, 'users/student_dashboard.html', {'announcements': announcements, 'lessons': lessons})
 
 
 # --- TEACHER PROFILE VIEW ---
@@ -210,6 +222,7 @@ def create_announcement(request):
         if form.is_valid():
             announcement = form.save(commit=False)  # Kaydetmeden önce öğretmen atıyoruz
             announcement.teacher = teacher
+            announcement.lesson = teacher.lesson
             announcement.save()
             messages.success(request, "Ders ilanı başarıyla oluşturuldu.")
             return redirect('teacher_dashboard')
@@ -290,3 +303,13 @@ def approve_application(request, announcement_id):
 
     messages.success(request, "Başvuru başarıyla onaylandı!")
     return redirect('teacher_dashboard')
+
+@login_required
+def view_teacher_profile(request, teacher_id):
+    try:
+        teacher = Teacher.objects.get(id=teacher_id)
+    except Teacher.DoesNotExist:
+        messages.error(request, "Öğretmen bulunamadı.")
+        return redirect('student_dashboard')
+
+    return render(request, 'users/view_teacher_profile.html', {'teacher': teacher})

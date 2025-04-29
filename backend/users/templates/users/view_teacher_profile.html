@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>Öğretmen Profili</title>
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+</head>
+<body>
+
+<!-- Navbar Başlangıcı -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{% url 'student_dashboard' %}">Öğrenci Paneli</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'student_profile' %}">Profilim</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'my_lessons' %}">Katıldığım Dersler</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'chatbot_page' %}">Chatbot</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'logout' %}">Çıkış Yap</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+<!-- Navbar Bitişi -->
+
+
+<div class="container mt-5">
+    <h2>Öğretmen Profili</h2>
+    <hr>
+
+    <p><strong>Adı:</strong> {{ teacher.user.username }}</p>
+    <p><strong>Branşı:</strong> {{ teacher.lesson.name }}</p>
+    <p><strong>Mezun Olduğu Okul:</strong> {{ teacher.graduated_school|default:"Belirtilmemiş" }}</p>
+    <p><strong>Uzmanlık Alanı:</strong> {{ teacher.expertise_area|default:"Belirtilmemiş" }}</p>
+    <p><strong>Deneyim Yılı:</strong> {{ teacher.years_of_experience|default:"Belirtilmemiş" }}</p>
+    <p><strong>Hakkında:</strong> {{ teacher.about|default:"Belirtilmemiş" }}</p>
+
+</div>
+
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+</body>
+</html>

@@ -20,6 +20,8 @@ urlpatterns = [
     path('student/change-password/', views.student_change_password, name='student_change_password'),
     path('student/apply-to-announcement/<int:announcement_id>/', views.apply_to_announcement, name='apply_to_announcement'),
     path('teacher/approve-application/<int:announcement_id>/', views.approve_application, name='approve_application'),
+    path('teacher/profile/<int:teacher_id>/', views.view_teacher_profile, name='view_teacher_profile'),
+
 
 
 
