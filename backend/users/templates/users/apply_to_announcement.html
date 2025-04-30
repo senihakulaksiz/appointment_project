@@ -9,17 +9,42 @@
 <body>
 
 <div class="container mt-5">
-    <h2>"{{ announcement.title }}" için Başvuru Yap</h2>
+  <div class="card shadow-sm" style="max-width: 600px; margin: auto;">
+    <div class="card-body">
+      <h3 class="card-title mb-4 text-black fw-bold text-center">
+        "{{ announcement.title }}" için Başvuru Yap
+      </h3>
 
-    <form method="post">
+      <form method="post">
         {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary mt-3">Başvuruyu Gönder</button>
-    </form>
 
-    <div class="mt-3">
-        <a href="{% url 'student_dashboard' %}" class="btn btn-secondary">Anasayfaya Dön</a>
+        <div class="mb-3">
+          <label for="id_student_requested_date" class="form-label fw-semibold">📅 Tarih Seç</label>
+          {{ form.student_requested_date }}
+        </div>
+
+        <div class="mb-3">
+          <label for="id_student_requested_time" class="form-label fw-semibold">⏰ Saat Seç</label>
+          {{ form.student_requested_time }}
+        </div>
+
+        <div class="mb-3">
+          <label for="id_student_class_level" class="form-label fw-semibold">🏫 Sınıf Seviyesi</label>
+          {{ form.student_class_level }}
+        </div>
+
+        <div class="mb-3">
+          <label for="id_student_request_detail" class="form-label fw-semibold">📝 İstek Detayı</label>
+          {{ form.student_request_detail }}
+        </div>
+
+        <div class="d-flex justify-content-between">
+          <button type="submit" class="btn btn-primary">📤 Başvuruyu Gönder</button>
+          <a href="{% url 'student_dashboard' %}" class="btn btn-secondary">⬅ Anasayfaya Dön</a>
+        </div>
+      </form>
     </div>
+  </div>
 </div>
 
 <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
