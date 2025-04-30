@@ -9,9 +9,11 @@
 <body>
 
 <!-- Navbar Başlangıcı -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<nav class="navbar navbar-expand-lg navbar-dark shadow-sm" style="background-color: rgb(215, 235, 255);">
   <div class="container-fluid">
-    <a class="navbar-brand" href="{% url 'student_dashboard' %}">Öğrenci Paneli</a>
+    <a class="navbar-brand fw-bold d-flex align-items-center text-black" href="{% url 'student_dashboard' %}">
+      🎓 <span class="ms-2">Öğrenci Paneli</span>
+    </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -19,36 +21,47 @@
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto">
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'student_profile' %}">Profilim</a>
+          <a class="nav-link text-black" href="{% url 'student_profile' %}">👤 Profilim</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'my_lessons' %}">Katıldığım Dersler</a>
+          <a class="nav-link text-black" href="{% url 'my_lessons' %}">📚 Katıldığım Dersler</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'chatbot_page' %}">Chatbot</a>
+          <a class="nav-link text-black" href="{% url 'chatbot_page' %}">💬 Chatbot</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'logout' %}">Çıkış Yap</a>
+          <a class="nav-link text-black" href="{% url 'logout' %}">🚪 Çıkış</a>
         </li>
       </ul>
     </div>
   </div>
 </nav>
+
 <!-- Navbar Bitişi -->
 
-<!-- Ana İçerik -->
-
+<!-- PROFİL KART -->
 <div class="container mt-5">
-    <h2>Öğrenci Profilim</h2>
-    <ul class="list-group">
-        <li class="list-group-item"><strong>Kullanıcı Adı:</strong> {{ username }}</li>
-        <li class="list-group-item"><strong>E-posta:</strong> {{ email }}</li>
-        <li class="list-group-item"><strong>Kayıt Tarihi:</strong> {{ date_joined|date:"d M Y H:i" }}</li>
-    </ul>
+  <div class="row justify-content-center">
+    <div class="col-md-8">
 
-    <div class="mt-4">
-        <a href="{% url 'student_change_password' %}" class="btn btn-warning">Şifremi Değiştir</a>
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h3 class="card-title mb-4">👤 <strong>Öğrenci Profilim</strong></h3>
+
+          <ul class="list-group list-group-flush mb-4">
+            <li class="list-group-item"><strong>Kullanıcı Adı:</strong> {{ username }}</li>
+            <li class="list-group-item"><strong>E-posta:</strong> {{ email }}</li>
+            <li class="list-group-item"><strong>Kayıt Tarihi:</strong> {{ date_joined|date:"d M Y H:i" }}</li>
+          </ul>
+
+          <div class="text-end">
+            <a href="{% url 'student_change_password' %}" class="btn btn-warning fw-semibold">🔒 Şifremi Değiştir</a>
+          </div>
+        </div>
+      </div>
+
     </div>
+  </div>
 </div>
 
 <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
