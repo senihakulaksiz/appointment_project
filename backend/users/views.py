@@ -260,13 +260,11 @@ def ask_llm(request):
         f"- Yayınladığı Dersler:\n{yayinladigi_dersler}\n"
         f"- Başvuran Öğrenciler:\n{basvuran_ogrenciler}\n"
         f"- Yayınladığı Branşlar:\n{yayinladigi_branşlar}\n\n"
-
         f"Örnek soru-cevap:\n"
         f"Soru: Katıldığım ders var mı?\n"
         f"Cevap: Evet, kayıtlı olduğunuz ders(ler): Matematik (Öğretmen: Ahmet Hoca)\n\n"
         f"Soru: Yayınladığım derse başvuran oldu mu?\n"
         f"Cevap: Evet, Türkçe dersi için Ayşe öğrenci olarak başvurmuş durumda.\n\n"
-
         f"Kullanıcının gerçek sorusu:\n\"{user_prompt}\"\n\n"
         f"Yalnızca verilen bilgilere dayanarak açık, anlaşılır ve kibar bir Türkçe yanıt ver. "
         f"Uydurma bilgi verme, tahmin yapma."
@@ -278,7 +276,6 @@ def ask_llm(request):
         f"- Gereksiz cümle kurma\n"
         f"- Bilgi yoksa 'ilgili bilgi bulunamadı' de\n"
         f"- Resmiyet değil, yardımcı olmayı amaçlayan kullanıcı dostu bir ton kullan\n"
-
 
     )
 
