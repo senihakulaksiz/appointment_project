@@ -9,9 +9,11 @@
 <body>
 
 <!-- Navbar Başlangıcı -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<nav class="navbar navbar-expand-lg navbar-dark shadow-sm" style="background-color: rgb(215, 235, 255);">
   <div class="container-fluid">
-    <a class="navbar-brand" href="{% url 'student_dashboard' %}">Öğrenci Paneli</a>
+    <a class="navbar-brand fw-bold d-flex align-items-center text-black" href="{% url 'student_dashboard' %}">
+      🎓 <span class="ms-2">Öğrenci Paneli</span>
+    </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -19,16 +21,16 @@
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto">
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'student_profile' %}">Profilim</a>
+          <a class="nav-link text-black" href="{% url 'student_profile' %}">👤 Profilim</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'my_lessons' %}">Katıldığım Dersler</a>
+          <a class="nav-link text-black" href="{% url 'my_lessons' %}">📚 Katıldığım Dersler</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'chatbot_page' %}">Chatbot</a>
+          <a class="nav-link text-black" href="{% url 'chatbot_page' %}">💬 Chatbot</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'logout' %}">Çıkış Yap</a>
+          <a class="nav-link text-black" href="{% url 'logout' %}">🚪 Çıkış</a>
         </li>
       </ul>
     </div>
@@ -38,17 +40,25 @@
 
 
 <div class="container mt-5">
-    <h2>Öğretmen Profili</h2>
-    <hr>
+  <div class="card shadow-sm p-4">
+    <div class="card-body">
+      <h3 class="card-title mb-4">👨‍🏫 Öğretmen Profili</h3>
 
-    <p><strong>Adı:</strong> {{ teacher.user.username }}</p>
-    <p><strong>Branşı:</strong> {{ teacher.lesson.name }}</p>
-    <p><strong>Mezun Olduğu Okul:</strong> {{ teacher.graduated_school|default:"Belirtilmemiş" }}</p>
-    <p><strong>Uzmanlık Alanı:</strong> {{ teacher.expertise_area|default:"Belirtilmemiş" }}</p>
-    <p><strong>Deneyim Yılı:</strong> {{ teacher.years_of_experience|default:"Belirtilmemiş" }}</p>
-    <p><strong>Hakkında:</strong> {{ teacher.about|default:"Belirtilmemiş" }}</p>
-
+      <ul class="list-group list-group-flush">
+        <li class="list-group-item"><strong>👤 Adı:</strong> {{ teacher.user.username }}</li>
+        <li class="list-group-item"><strong>📘 Branşı:</strong> {{ teacher.lesson.name }}</li>
+        <li class="list-group-item"><strong>🎓 Mezun Olduğu Okul:</strong> {{ teacher.graduated_school|default:"Belirtilmemiş" }}</li>
+        <li class="list-group-item"><strong>💼 Uzmanlık Alanı:</strong> {{ teacher.expertise_area|default:"Belirtilmemiş" }}</li>
+        <li class="list-group-item"><strong>📅 Deneyim Yılı:</strong> {{ teacher.years_of_experience|default:"Belirtilmemiş" }} yıl</li>
+        <li class="list-group-item">
+          <strong>📝 Hakkında:</strong><br>
+          <p class="mt-2">{{ teacher.about|default:"Belirtilmemiş" }}</p>
+        </li>
+      </ul>
+    </div>
+  </div>
 </div>
+
 
 <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
 </body>

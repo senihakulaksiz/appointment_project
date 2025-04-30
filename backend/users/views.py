@@ -105,7 +105,7 @@ def role_based_redirect(request):
 @login_required
 def teacher_dashboard(request):
     if request.user.is_teacher:
-        announcements = LessonAnnouncement.objects.filter(teacher=request.user.teacher).order_by('-created_at')
+        announcements = LessonAnnouncement.objects.all().order_by('-created_at')
         return render(request, 'users/teacher_dashboard.html', {'announcements': announcements})
     else:
         return redirect('student_dashboard')
@@ -369,6 +369,19 @@ def apply_to_announcement(request, announcement_id):
         form = ApplyToAnnouncementForm()
 
     return render(request, 'users/apply_to_announcement.html', {'form': form, 'announcement': announcement})
+
+@login_required
+def delete_announcement(request, announcement_id):
+    teacher = request.user.teacher
+    try:
+        announcement = LessonAnnouncement.objects.get(id=announcement_id, teacher=teacher)
+        announcement.delete()
+        messages.success(request, "İlan başarıyla silindi.")
+    except LessonAnnouncement.DoesNotExist:
+        messages.error(request, "Silinecek ilan bulunamadı.")
+
+    return redirect('my_announcements')
+
 
 
 @login_required

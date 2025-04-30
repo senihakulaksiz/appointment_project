@@ -9,9 +9,11 @@
 <body>
 
 <!-- Navbar Başlangıcı -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
+<nav class="navbar navbar-expand-lg navbar-dark shadow-sm" style="background-color: rgb(215, 235, 255);">
   <div class="container-fluid">
-    <a class="navbar-brand" href="{% url 'student_dashboard' %}">Öğrenci Paneli</a>
+    <a class="navbar-brand fw-bold d-flex align-items-center text-black" href="{% url 'student_dashboard' %}">
+      🎓 <span class="ms-2">Öğrenci Paneli</span>
+    </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -19,38 +21,49 @@
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto">
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'student_profile' %}">Profilim</a>
+          <a class="nav-link text-black" href="{% url 'student_profile' %}">👤 Profilim</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'my_lessons' %}">Katıldığım Dersler</a>
+          <a class="nav-link text-black" href="{% url 'my_lessons' %}">📚 Katıldığım Dersler</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'chatbot_page' %}">Chatbot</a>
+          <a class="nav-link text-black" href="{% url 'chatbot_page' %}">💬 Chatbot</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link" href="{% url 'logout' %}">Çıkış Yap</a>
+          <a class="nav-link text-black" href="{% url 'logout' %}">🚪 Çıkış</a>
         </li>
       </ul>
     </div>
   </div>
 </nav>
+
 <!-- Navbar Bitişi -->
 
 <div class="container mt-4">
     <form method="get" class="row g-3">
-        <div class="col-md-5">
-            <select name="branch" class="form-select">
-        <option value="">Branş Seçin</option>
-        {% for lesson in lessons %}
-            <option value="{{ lesson.name }}">{{ lesson.name }}</option>
-        {% endfor %}
-    </select>
-        </div>
-        <div class="col-md-5">
-            <input type="text" name="teacher_name" class="form-control" placeholder="Öğretmen İsmi Ara (Örn: Ali)">
-        </div>
-        <div class="col-md-2">
-            <button type="submit" class="btn btn-primary w-100">Ara</button>
+        <div class="container mt-4">
+          <div class="card shadow-sm p-4">
+            <form method="get" class="row gx-3 gy-2 align-items-center">
+              <div class="col-md-4 mb-2">
+                <select name="branch" class="form-select">
+                  <option value="">📚 Branş Seçin</option>
+                  {% for lesson in lessons %}
+                    <option value="{{ lesson.name }}">{{ lesson.name }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+
+              <div class="col-md-5 mb-2">
+                <input type="text" name="teacher_name" class="form-control" placeholder="🔍 Öğretmen İsmi (Örn: Ali)">
+              </div>
+
+              <div class="col-md-3 mb-2">
+                <button type="submit" class="btn btn-primary w-100 fw-semibold">
+                  Ara
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
     </form>
 </div>
@@ -62,38 +75,44 @@
 
 
 <div class="container mt-5">
-    <h3>Mevcut Ders İlanları</h3>
+    <div class="text mb-4 mt-5">
+      <h3 class="fw-bold text-black">📚 Mevcut Ders İlanları</h3>
+      <p class="text-muted">Sana uygun aktif ilanları aşağıdan keşfedebilirsin!</p>
+    </div>
+
+
 
     {% for ann in announcements %}
-        <div class="card mb-3">
-            <div class="card-body">
-                <h4 class="card-title">{{ ann.title }}</h4>
-                <p class="card-text">{{ ann.description }}</p>
-                <!-- <small class="text-muted">{{ ann.created_at }}</small> -->
+      <div class="card mb-4 shadow-sm rounded-3">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <h5 class="card-title mb-0">{{ ann.title }}</h5>
+            <small class="text-muted">{{ ann.created_at|date:"d M Y H:i" }}</small>
+          </div>
 
-                <p><strong>Öğretmen:</strong> {{ ann.teacher.user.username }}
-                    <a href="{% url 'view_teacher_profile' ann.teacher.id %}" class="btn btn-link btn-sm">Profili Gör</a>
-                </p>
-                <p><strong>Branş:</strong> {{ ann.lesson.name }}</p>
+          <p class="card-text">{{ ann.description }}</p>
+          <hr class="my-2">
 
+          <div class="mb-2">
+            <strong>Öğretmen:</strong> {{ ann.teacher.user.username }}
+            <a href="{% url 'view_teacher_profile' ann.teacher.id %}" class="ms-2 link-primary text-decoration-none">Profili Gör</a>
+          </div>
 
-                {% if not ann.student %}
-                    <!-- Eğer ilana öğrenci atanmadıysa katılma şansı var -->
-                    <a href="{% url 'apply_to_announcement' ann.id %}" class="btn btn-success btn-sm">Başvur</a>
+          <div class="mb-3"><strong>Branş:</strong> {{ ann.lesson.name }}</div>
 
-                {% else %}
-                    {% if ann.student.user == request.user %}
-                        <!-- Eğer bu ilana şu anki öğrenci katıldıysa -->
-                        <span class="badge bg-info text-dark">Katıldınız</span>
-                    {% else %}
-                        <span class="badge bg-secondary">Dolu</span>
-                    {% endif %}
-                {% endif %}
-            </div>
+          {% if not ann.student %}
+            <a href="{% url 'apply_to_announcement' ann.id %}" class="btn btn-success btn-sm">Başvur</a>
+          {% else %}
+            {% if ann.student.user == request.user %}
+              <span class="badge bg-info text-dark">Katıldınız</span>
+            {% else %}
+              <span class="badge bg-secondary">Dolu</span>
+            {% endif %}
+          {% endif %}
         </div>
-    {% empty %}
-        <p>Şu anda aktif ders ilanı bulunmamaktadır.</p>
+      </div>
     {% endfor %}
+
 </div>
 
 <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
