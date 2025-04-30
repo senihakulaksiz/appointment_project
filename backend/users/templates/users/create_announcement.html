@@ -9,20 +9,32 @@
 <body style="background-color: #f8f9fa;">
 
 <!-- NAVBAR -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light shadow-sm">
+<nav class="navbar navbar-expand-lg navbar-dark shadow-sm" style="background-color: rgb(215, 235, 255);">
   <div class="container-fluid">
-    <a class="navbar-brand" href="{% url 'teacher_dashboard' %}">Öğretmen Paneli</a>
+    <a class="navbar-brand fw-bold d-flex align-items-center text-black" href="{% url 'teacher_dashboard' %}">
+      📘 <span class="ms-2">Öğretmen Paneli</span>
+    </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto">
-        <li class="nav-item"><a class="nav-link" href="{% url 'teacher_profile' %}">Profilim</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'my_announcements' %}">İlanlarım</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'create_announcement' %}">Ders İlanı Yayınla</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'chatbot_page' %}">Chatbot</a></li>
-        <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Çıkış Yap</a></li>
+        <li class="nav-item">
+          <a class="nav-link text-black" href="{% url 'teacher_profile' %}">👤 Profilim</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-black" href="{% url 'my_announcements' %}">📄 İlanlarım</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-black" href="{% url 'create_announcement' %}">➕ İlan Yayınla</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-black" href="{% url 'chatbot_page' %}">💬 Chatbot</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-black" href="{% url 'logout' %}">🚪 Çıkış</a>
+        </li>
       </ul>
     </div>
   </div>
