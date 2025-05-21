@@ -11,8 +11,11 @@
 <!-- NAVBAR -->
 <nav class="navbar navbar-expand-lg navbar-dark shadow-sm" style="background-color: rgb(215, 235, 255);">
   <div class="container-fluid">
-    <a class="navbar-brand fw-bold d-flex align-items-center text-black" href="{% url 'teacher_dashboard' %}">
-      📘 <span class="ms-2">Öğretmen Paneli</span>
+    <a class="navbar-brand fw-bold d-flex align-items-center text-black"
+       href="{% if request.user.is_student %}{% url 'student_dashboard' %}{% else %}{% url 'teacher_dashboard' %}{% endif %}">
+      📘 <span class="ms-2">
+        {% if request.user.is_student %}Öğrenci Paneli{% else %}Öğretmen Paneli{% endif %}
+      </span>
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
@@ -20,15 +23,32 @@
 
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto">
-        <li class="nav-item">
-          <a class="nav-link text-black" href="{% url 'teacher_profile' %}">👤 Profilim</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-black" href="{% url 'my_announcements' %}">📄 İlanlarım</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-black" href="{% url 'create_announcement' %}">➕ İlan Yayınla</a>
-        </li>
+
+        {% if request.user.is_teacher %}
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'teacher_profile' %}">👤 Profilim</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'my_announcements' %}">📄 İlanlarım</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'create_announcement' %}">➕ İlan Yayınla</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'chat' %}">💬 Mesajlarım</a>
+          </li>
+        {% elif request.user.is_student %}
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'student_profile' %}">👤 Profilim</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'my_lessons' %}">📘 Katıldığım Dersler</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'chat' %}">💬 Mesajlarım</a>
+          </li>
+        {% endif %}
+
         <li class="nav-item">
           <a class="nav-link text-black" href="{% url 'chatbot_page' %}">💬 Chatbot</a>
         </li>
@@ -44,30 +64,41 @@
 <div class="container mt-5">
     <h2>Gen AI Chatbot</h2>
 
-    <div id="chat-box" style="border: 1px solid #ccc; padding: 10px; height: 400px; overflow-y: scroll; margin-bottom: 20px;">
+    <div id="chat-box" style="border: 1px solid #ccc; padding: 10px; height: 400px; overflow-y: scroll; margin-top: 20px;">
         <!-- Burada sohbet mesajları birikecek -->
     </div>
-
+        {% if request.user.is_student %}
+      <!-- Öğrenci için hazır sorular -->
+      <div class="mb-3">
+        <button id="btn-question1" class="btn btn-outline-primary me-2">Şu an başvurabileceğim ders var mı?</button>
+        <button id="btn-question2" class="btn btn-outline-primary">Katıldığım dersler neler?</button>
+      </div>
+    {% elif request.user.is_teacher %}
+      <!-- Öğretmen için hazır sorular -->
+      <div class="mb-3">
+        <button id="btn-teacher-question1" class="btn btn-outline-success me-2">Başvuran öğrenciler kimler?</button>
+        <button id="btn-teacher-question2" class="btn btn-outline-success">İlanlarımın durumu nedir?</button>
+      </div>
+    {% endif %}
     <form id="ask-form">
         {% csrf_token %}
         <input type="text" id="prompt" placeholder="Bir soru yazın..." class="form-control" required>
         <button type="submit" class="btn btn-primary mt-2">Sor</button>
     </form>
 </div>
-
 <!-- JAVASCRIPT -->
 <script>
 const chatBox = document.getElementById('chat-box');
+const promptInput = document.getElementById('prompt');
+const askForm = document.getElementById('ask-form');
 
-document.getElementById('ask-form').addEventListener('submit', function(e) {
-    e.preventDefault();
-
-    const prompt = document.getElementById('prompt').value;
-
+function sendPrompt(promptText) {
+    // Kullanıcı mesajı ekle
     const userMessage = document.createElement('div');
-    userMessage.innerHTML = "<strong>Sen:</strong> " + prompt;
+    userMessage.innerHTML = "<strong>Sen:</strong> " + promptText;
     chatBox.appendChild(userMessage);
 
+    // API isteği gönder
     fetch("{% url 'ask_llm' %}", {
         method: "POST",
         headers: {
@@ -75,7 +106,7 @@ document.getElementById('ask-form').addEventListener('submit', function(e) {
             'X-CSRFToken': '{{ csrf_token }}'
         },
         body: new URLSearchParams({
-            'prompt': prompt
+            'prompt': promptText
         })
     })
     .then(response => response.json())
@@ -90,11 +121,36 @@ document.getElementById('ask-form').addEventListener('submit', function(e) {
         errorMessage.innerHTML = "<strong>Hata:</strong> " + error;
         chatBox.appendChild(errorMessage);
     });
+}
 
-    document.getElementById('prompt').value = '';
+// Form submit eventi
+askForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const prompt = promptInput.value.trim();
+    if (!prompt) return;
+    sendPrompt(prompt);
+    promptInput.value = '';
+});
+
+// Hazır sorular butonları (rol bazlı)
+document.getElementById('btn-question1')?.addEventListener('click', () => {
+    sendPrompt("Şu an başvurabileceğim ders var mı?");
+});
+
+document.getElementById('btn-question2')?.addEventListener('click', () => {
+    sendPrompt("Katıldığım dersler neler?");
+});
+
+document.getElementById('btn-teacher-question1')?.addEventListener('click', () => {
+    sendPrompt("Başvuran öğrenciler kimler?");
+});
+
+document.getElementById('btn-teacher-question2')?.addEventListener('click', () => {
+    sendPrompt("İlanlarımın durumu nedir?");
 });
 </script>
 
 <script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
 </body>
 </html>
+

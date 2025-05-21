@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, get_user_model
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -6,8 +6,8 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import requests
 from django.contrib.auth import logout
-from .models import CustomUser, Student, Teacher, Lesson, AvailableSlot, LessonAnnouncement
-from .forms import TeacherProfileForm, LessonAnnouncementForm
+from .models import CustomUser, Student, Teacher, Lesson, AvailableSlot, LessonAnnouncement, Message
+from .forms import TeacherProfileForm, LessonAnnouncementForm, MessageForm
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
@@ -19,7 +19,7 @@ User = get_user_model()
 
 # --- LOGIN VIEW ---
 def login_view(request):
-    form = AuthenticationForm()  # 👈 Formu oluşturduk
+    form = AuthenticationForm()
 
     if request.method == "POST":
         form = AuthenticationForm(request, data=request.POST)
@@ -41,12 +41,13 @@ def login_view(request):
 
 @login_required
 def role_redirect(request):
-    if hasattr(request.user, 'teacher'):
+    if request.user.is_teacher:
         return redirect('teacher_dashboard')
-    elif hasattr(request.user, 'student'):
+    elif request.user.is_student:
         return redirect('student_dashboard')
     else:
         return redirect('login')
+
 
 def logout_view(request):
     logout(request)
@@ -157,13 +158,30 @@ def teacher_profile(request):
 @login_required
 def student_profile(request):
     user = request.user
+
+    # Öğrenci modeli üzerinden randevu aldığı öğretmenleri bul
+    try:
+        student = user.student
+    except:
+        student = None
+
+    if student:
+        joined_teachers = Teacher.objects.filter(
+            availableslot__appointment__student=student
+        ).distinct()
+    else:
+        joined_teachers = []
+
     context = {
         'username': user.username,
         'email': user.email,
         'date_joined': user.date_joined,
+        'joined_teachers': joined_teachers
     }
+
     return render(request, 'users/student_profile.html', context)
 
+    return render(request, 'users/student_profile.html', context)
 @login_required
 def student_change_password(request):
     if request.method == 'POST':
@@ -193,104 +211,95 @@ def teacher_appointments(request):
 @csrf_exempt
 @login_required
 def ask_llm(request):
-    user_prompt = request.POST.get("prompt", "Merhaba, nasıl yardımcı olabilirim?")
+    user_prompt = request.POST.get("prompt", "").strip()
 
-    # 🔒 Tüm veri alanlarını varsayılan olarak boş ayarla (hata riskini sıfırla)
+    # Hazır sorular
+    predefined_questions = {
+        "ilk_soru": "Şu an başvurabileceğim ders var mı?",
+        "ikinci_soru": "Katıldığım dersler neler?"
+    }
+
+    # Eğer gelen prompt boşsa veya belirli bir keyword ise hazır soruyu kullan
+    if not user_prompt:
+        user_prompt = predefined_questions["ilk_soru"]
+    elif user_prompt.lower() in ["ilk soru", "soru 1"]:
+        user_prompt = predefined_questions["ilk_soru"]
+    elif user_prompt.lower() in ["ikinci soru", "soru 2"]:
+        user_prompt = predefined_questions["ikinci_soru"]
+
     katildigi_dersler = "Yok"
     basvurabilecegi_dersler = "Yok"
-    onay_bekleyen_basvurular = "Yok"
+    onaybekleyen_basvurular = "Yok"
     yayinladigi_dersler = "Yok"
     basvuran_ogrenciler = "Yok"
-    yayinladigi_branşlar = "Yok"
+    yayinladigi_branslar = "Yok"
 
-    # 👩‍🎓 Öğrenci ise
-    if hasattr(request.user, 'student'):
-        # Katıldığı onaylanmış dersler
-        lessons_joined = LessonAnnouncement.objects.filter(student=request.user.student, is_approved=True)
-        if lessons_joined.exists():
-            katildigi_dersler = "\n".join([
-                f"- {l.lesson.name} (Öğretmen: {l.teacher.user.username})" for l in lessons_joined
-            ])
-
-        # Başvurabileceği boş dersler
-        available_lessons = LessonAnnouncement.objects.filter(student__isnull=True)
-        if available_lessons.exists():
-            basvurabilecegi_dersler = "\n".join([
-                f"- {l.lesson.name} (Öğretmen: {l.teacher.user.username})" for l in available_lessons
-            ])
-
-        # Onay bekleyen başvurular
-        pending_lessons = LessonAnnouncement.objects.filter(student=request.user.student, is_approved=False)
-        if pending_lessons.exists():
-            onay_bekleyen_basvurular = "\n".join([
-                f"- {l.lesson.name} (Öğretmen: {l.teacher.user.username})" for l in pending_lessons
-            ])
-
-    # 👨‍🏫 Öğretmen ise
-    elif hasattr(request.user, 'teacher'):
-        # Yayınladığı ders ilanları
-        teacher_announcements = LessonAnnouncement.objects.filter(teacher=request.user.teacher)
-        if teacher_announcements.exists():
-            yayinladigi_dersler = "\n".join([
-                f"- {l.lesson.name} (Öğrenci: {l.student.user.username if l.student else 'Henüz başvuru yok'})" for l in teacher_announcements
-            ])
-
-        # Başvuru almış ama onaylanmamış olanlar
-        applications_pending = LessonAnnouncement.objects.filter(
-            teacher=request.user.teacher, student__isnull=False, is_approved=False
-        )
-        if applications_pending.exists():
-            basvuran_ogrenciler = "\n".join([
-                f"- {l.lesson.name} (Başvuran: {l.student.user.username})" for l in applications_pending
-            ])
-
-        # Yayınladığı branşlar
-        lesson = getattr(request.user.teacher, 'lesson', None)
-        if lesson:
-            yayinladigi_branşlar = f"- {lesson.name}"
-
-    # 🧠 LLM'e gönderilecek prompt
-    prompt = (
-        f"Sen bir özel ders platformunun akıllı sohbet asistanısın. Kullanıcılara ders katılımı, başvurular, "
-        f"ilan durumu ve öğretmen profilleri hakkında yardımcı olursun.\n\n"
-        f"Kullanıcının mevcut durumu:\n"
-        f"- Katıldığı Dersler:\n{katildigi_dersler}\n"
-        f"- Başvurabileceği Dersler:\n{basvurabilecegi_dersler}\n"
-        f"- Onay Bekleyen Başvurular:\n{onay_bekleyen_basvurular}\n"
-        f"- Yayınladığı Dersler:\n{yayinladigi_dersler}\n"
-        f"- Başvuran Öğrenciler:\n{basvuran_ogrenciler}\n"
-        f"- Yayınladığı Branşlar:\n{yayinladigi_branşlar}\n\n"
-        f"Örnek soru-cevap:\n"
-        f"Soru: Katıldığım ders var mı?\n"
-        f"Cevap: Evet, kayıtlı olduğunuz ders(ler): Matematik (Öğretmen: Ahmet Hoca)\n\n"
-        f"Soru: Yayınladığım derse başvuran oldu mu?\n"
-        f"Cevap: Evet, Türkçe dersi için Ayşe öğrenci olarak başvurmuş durumda.\n\n"
-        f"Kullanıcının gerçek sorusu:\n\"{user_prompt}\"\n\n"
-        f"Yalnızca verilen bilgilere dayanarak açık, anlaşılır ve kibar bir Türkçe yanıt ver. "
-        f"Uydurma bilgi verme, tahmin yapma."
-        f"Kullanıcının gerçek sorusu:\n\"{user_prompt}\"\n\n"
-        f"Yalnızca yukarıdaki bilgilere dayanarak cevap ver. "
-        f"Verilen bilgilere göre:\n"
-        f"- Açık ve kısa konuş\n"
-        f"- Aynı şeyi tekrar etme\n"
-        f"- Gereksiz cümle kurma\n"
-        f"- Bilgi yoksa 'ilgili bilgi bulunamadı' de\n"
-        f"- Resmiyet değil, yardımcı olmayı amaçlayan kullanıcı dostu bir ton kullan\n"
-
-    )
-
-    # 🔁 LLM ile iletişim
     try:
+        if request.user.is_student:
+            student = request.user.student
+            lessons_joined = LessonAnnouncement.objects.filter(student=student, is_approved=True)
+            if lessons_joined.exists():
+                katildigi_dersler = ", ".join([f"{l.lesson.name} (Öğretmen: {l.teacher.user.username})" for l in lessons_joined])
+
+            available_lessons = LessonAnnouncement.objects.filter(student__isnull=True)
+            if available_lessons.exists():
+                basvurabilecegi_dersler = ", ".join([f"{l.lesson.name} (Öğretmen: {l.teacher.user.username})" for l in available_lessons])
+
+            pending_lessons = LessonAnnouncement.objects.filter(student=student, is_approved=False)
+            if pending_lessons.exists():
+                onaybekleyen_basvurular = ", ".join([f"{l.lesson.name} (Öğretmen: {l.teacher.user.username})" for l in pending_lessons])
+
+        elif request.user.is_teacher:
+            teacher = request.user.teacher
+            teacher_announcements = LessonAnnouncement.objects.filter(teacher=teacher)
+            if teacher_announcements.exists():
+                yayinladigi_dersler = ", ".join([
+                    f"{l.lesson.name} (Öğrenci: {l.student.user.username if l.student else 'Henüz başvuru yok'})"
+                    for l in teacher_announcements
+                ])
+
+            applications_pending = LessonAnnouncement.objects.filter(teacher=teacher, student__isnull=False, is_approved=False)
+            if applications_pending.exists():
+                basvuran_ogrenciler = ", ".join([f"{l.lesson.name} (Başvuran: {l.student.user.username})" for l in applications_pending])
+
+            lesson = getattr(teacher, 'lesson', None)
+            if lesson:
+                yayinladigi_branslar = lesson.name
+
+        prompt = (
+            f"You are a smart assistant for a private tutoring platform. "
+            f"Help users with their lessons, applications, announcements, and teacher profiles.\n\n"
+            f"User current data:\n"
+            f"- Joined lessons: {katildigi_dersler}\n"
+            f"- Available lessons: {basvurabilecegi_dersler}\n"
+            f"- Pending applications: {onaybekleyen_basvurular}\n"
+            f"- Published lessons: {yayinladigi_dersler}\n"
+            f"- Applicants: {basvuran_ogrenciler}\n"
+            f"- Published branches: {yayinladigi_branslar}\n\n"
+            f"Example Q&A:\n"
+            f"Q: Do I have any joined lessons?\n"
+            f"A: Yes, you are registered for the following lessons: Math (Teacher: Ahmet Hoca).\n\n"
+            f"Q: Are there any applicants for my published lesson?\n"
+            f"A: Yes, Ayşe has applied for the Turkish lesson.\n\n"
+            f"User question:\n\"{user_prompt}\"\n\n"
+            f"Please answer clearly, politely, and only based on the provided information. "
+            f"Do not guess or make up information. "
+            f"Keep your answer short and in Turkish."
+        )
+
         response = requests.post(
             "http://host.docker.internal:11434/api/generate",
             json={
                 "model": "llama3",
                 "prompt": prompt,
-                "stream": False
+                "stream": False,
+                "temperature": 0.3,
+                "max_tokens": 300
             }
         )
         result = response.json()
         return JsonResponse({"response": result.get("response", "Cevap alınamadı.")})
+
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
 
@@ -428,3 +437,101 @@ def my_announcements(request):
         'pending_announcements': pending_announcements,
     }
     return render(request, 'users/my_announcements.html', context)
+
+@login_required
+def chat_view(request, user_id):
+    other_user = get_object_or_404(User, id=user_id)
+    messages = Message.objects.filter(
+        sender__in=[request.user, other_user],
+        receiver__in=[request.user, other_user]
+    )
+
+    if request.method == 'POST':
+        form = MessageForm(request.POST)
+        if form.is_valid():
+            new_msg = form.save(commit=False)
+            new_msg.sender = request.user
+            new_msg.receiver = other_user
+            new_msg.save()
+            return redirect('chat_with_user', user_id=other_user.id)
+    else:
+        form = MessageForm()
+
+    users = User.objects.exclude(id=request.user.id)  # Mesajlaşılabilecek diğer kullanıcılar
+    return render(request, 'chat.html', {
+        'active_user': other_user,
+        'users': users,
+        'messages': messages,
+        'form': form
+    })
+
+@login_required
+def chat_with_user_view(request, user_id):
+    other_user = get_object_or_404(User, id=user_id)
+
+    # 🔄 Sadece ilgili kişiler listelensin
+    if request.user.is_student:
+        student = request.user.student
+        # Katıldığı ilanların öğretmenleri
+        related_announcements = LessonAnnouncement.objects.filter(student=student, is_approved=True)
+        allowed_users = [ann.teacher.user for ann in related_announcements]
+    elif request.user.is_teacher:
+        teacher = request.user.teacher
+        # Öğretmenin ilanlarına başvuran öğrenciler
+        related_announcements = LessonAnnouncement.objects.filter(teacher=teacher, student__isnull=False)
+        allowed_users = [ann.student.user for ann in related_announcements]
+    else:
+        allowed_users = []
+
+    # Sidebar kullanıcıları (listede gözüken kişiler)
+    users = allowed_users
+
+    # Eğer seçilen kullanıcı listede yoksa, hata gösterme
+    if other_user not in allowed_users:
+        messages.error(request, "Bu kullanıcıyla mesajlaşamazsınız.")
+        return redirect('chat')
+
+    # Ortak mesajlar
+    messages_qs = Message.objects.filter(
+        sender=request.user, receiver=other_user
+    ) | Message.objects.filter(
+        sender=other_user, receiver=request.user
+    )
+    messages_qs = messages_qs.order_by('timestamp')
+
+    if request.method == 'POST':
+        form = MessageForm(request.POST)
+        if form.is_valid():
+            msg = form.save(commit=False)
+            msg.sender = request.user
+            msg.receiver = other_user
+            msg.save()
+            return redirect('chat_with_user', user_id=other_user.id)
+    else:
+        form = MessageForm()
+
+    return render(request, 'users/chat.html', {
+        'messages': messages_qs,
+        'form': form,
+        'users': users,
+        'active_user': other_user,
+    })
+@login_required
+def chat_home(request):
+    if request.user.is_student:
+        student = request.user.student
+        related_announcements = LessonAnnouncement.objects.filter(student=student, is_approved=True)
+        allowed_users = [ann.teacher.user for ann in related_announcements]
+    elif request.user.is_teacher:
+        teacher = request.user.teacher
+        related_announcements = LessonAnnouncement.objects.filter(teacher=teacher, student__isnull=False)
+        allowed_users = [ann.student.user for ann in related_announcements]
+    else:
+        allowed_users = []
+
+    return render(request, 'users/chat.html', {
+        'active_user': None,
+        'users': allowed_users,
+        'messages': [],
+        'form': None
+    })

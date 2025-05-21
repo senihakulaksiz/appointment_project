@@ -1,10 +1,10 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="tr">
 <head>
-    <meta charset="UTF-8">
-    <title>Öğrenci Profilim</title>
-    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+  <meta charset="UTF-8" />
+  <title>Sohbet Sayfası</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
 </head>
 <body>
 <!-- NAVBAR -->
@@ -59,49 +59,63 @@
   </div>
 </nav>
 
-<!-- PROFİL KART -->
-<div class="container mt-5">
-  <div class="row justify-content-center">
-    <div class="col-md-8">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h3 class="card-title mb-4">👤 <strong>Öğrenci Profilim</strong></h3>
-          <ul class="list-group list-group-flush mb-4">
-            <li class="list-group-item"><strong>Kullanıcı Adı:</strong> {{ username }}</li>
-            <li class="list-group-item"><strong>E-posta:</strong> {{ email }}</li>
-            <li class="list-group-item"><strong>Kayıt Tarihi:</strong> {{ date_joined|date:"d M Y H:i" }}</li>
-          </ul>
-          <div class="text-end">
-            <a href="{% url 'student_change_password' %}" class="btn btn-warning fw-semibold">🔒 Şifremi Değiştir</a>
-          </div>
-        </div>
-      </div>
+  <h2 class="mb-4">📨 Sohbet Sayfası</h2>
 
-      {% if joined_teachers %}
-  <div class="card shadow-sm mt-4">
-    <div class="card-body">
-      <h4 class="card-title">👨‍🏫 Randevu Aldığınız Öğretmenler</h4>
-      <ul class="list-group mt-3">
-        {% for teacher in joined_teachers %}
-          <li class="list-group-item d-flex justify-content-between align-items-center">
-            {{ teacher.user.username }} ({{ teacher.lesson.name }})
-            <a href="{% url 'chat_with_user' teacher.user.id %}" class="btn btn-outline-primary btn-sm">
-              💬 Mesaj At
-            </a>
-          </li>
+  <div class="row">
+    <!-- Sidebar: Kullanıcı Listesi -->
+    <div class="col-md-3">
+      <div class="list-group user-list">
+        {% for user in users %}
+          <a href="{% url 'chat_with_user' user.id %}" class="list-group-item list-group-item-action {% if user == active_user %}active{% endif %}">
+            {{ user.username }}
+          </a>
+        {% empty %}
+          <p class="text-muted">Hiçbir kullanıcıyla bağlantınız yok.</p>
         {% endfor %}
-      </ul>
+      </div>
+    </div>
+
+    <!-- Sohbet Alanı -->
+    <div class="col-md-9">
+      {% if active_user %}
+        <h5 class="mb-3">👤 {{ active_user.username }} ile sohbet</h5>
+
+        <div class="chat-box mb-3 border">
+          {% for message in messages %}
+            {% if message.sender == request.user %}
+              <div class="d-flex justify-content-end">
+                <div class="message message-right">
+                  {{ message.content }}<br />
+                  <small>{{ message.timestamp|date:"d M H:i" }}</small>
+                </div>
+              </div>
+            {% else %}
+              <div class="d-flex justify-content-start">
+                <div class="message message-left">
+                  {{ message.content }}<br />
+                  <small>{{ message.timestamp|date:"d M H:i" }}</small>
+                </div>
+              </div>
+            {% endif %}
+          {% empty %}
+            <p class="text-muted">Henüz mesaj yok.</p>
+          {% endfor %}
+        </div>
+
+        <!-- Mesaj Gönder -->
+        <form method="post">
+          {% csrf_token %}
+          <div class="input-group">
+            {{ form.content }}
+            <button class="btn btn-primary" type="submit">Gönder</button>
+          </div>
+        </form>
+      {% else %}
+        <p class="text-muted">Lütfen mesajlaşmak için bir kullanıcı seçin.</p>
+      {% endif %}
     </div>
   </div>
-{% else %}
-  <p class="text-muted mt-4 text-center">Henüz bir öğretmenden randevu almadınız.</p>
-{% endif %}
 
-
-    </div>
-  </div>
-</div>
-
-<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
