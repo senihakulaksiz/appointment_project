@@ -17,6 +17,7 @@ from .forms import MessageForm, ChatRequestForm
 from django.db.models import Q
 from .models import Notification
 
+from users.tasks import notify_admin_teacher_registered
 
 User = get_user_model()
 
@@ -57,14 +58,14 @@ def logout_view(request):
     return redirect('login')
 
 # --- REGISTER VIEW ---
-@csrf_exempt  # Şu anda deneme amaçlı sorun değil
+@csrf_exempt
 def register_view(request):
     if request.method == "POST":
         username = request.POST.get("username")
         email = request.POST.get("email")
         password = request.POST.get("password")
         user_type = request.POST.get("user_type")
-        subject = request.POST.get("subject")  # sadece öğretmene lazım
+        subject = request.POST.get("subject")
 
         if not all([username, email, password, user_type]):
             messages.error(request, "Lütfen tüm alanları doldurun.")
@@ -83,9 +84,14 @@ def register_view(request):
             try:
                 lesson = Lesson.objects.get(name=subject)
                 Teacher.objects.create(user=user, lesson=lesson)
+
+                #  Admin'e e-posta bildirimi gönder (CELERY)
+                from users.tasks import notify_admin_teacher_registered
+                notify_admin_teacher_registered.delay(user.username, user.email)
+
             except Lesson.DoesNotExist:
                 messages.error(request, "Seçilen branş bulunamadı.")
-                user.delete()  # yanlış veri oluşmasın
+                user.delete()
                 return redirect("register")
 
         login(request, user)
@@ -93,6 +99,7 @@ def register_view(request):
 
     lessons = Lesson.objects.all()
     return render(request, "users/register.html", {"lessons": lessons})
+
 # --- ROLE-BASED REDIRECT VIEW ---
 @login_required
 def role_based_redirect(request):
@@ -602,3 +609,6 @@ def go_to_notification(request, notification_id):
     except Notification.DoesNotExist:
         messages.error(request, "Bildirim bulunamadı.")
         return redirect('notification_list')
+
+from users.tasks import notify_admin_teacher_registered
+
