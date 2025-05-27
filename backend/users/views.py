@@ -272,25 +272,24 @@ def ask_llm(request):
         f"- Başvuran Öğrenciler:\n{basvuran_ogrenciler}\n"
         f"- Yayınladığı Branşlar:\n{yayinladigi_branşlar}\n\n"
 
-        f"Örnek soru-cevap:\n"
+        f"📌 Örnek Soru-Cevaplar (Kullanıcıya yardımcı olacak hazır sorular):\n"
+        f"👩‍🎓 Öğrenci:\n"
         f"Soru: Katıldığım ders var mı?\n"
-        f"Cevap: Evet, kayıtlı olduğunuz ders(ler): Matematik (Öğretmen: Ahmet Hoca)\n\n"
-        f"Soru: Yayınladığım derse başvuran oldu mu?\n"
-        f"Cevap: Evet, Türkçe dersi için Ayşe öğrenci olarak başvurmuş durumda.\n\n"
+        f"Cevap: {katildigi_dersler if katildigi_dersler != 'Yok' else 'İlgili bilgi bulunamadı.'}\n\n"
+        f"Soru: Başvurabileceğim ders var mı?\n"
+        f"Cevap: {basvurabilecegi_dersler if basvurabilecegi_dersler != 'Yok' else 'Şu anda başvurabileceğiniz bir ders bulunmamaktadır.'}\n\n"
+        f"👨‍🏫 Öğretmen:\n"
+        f"Soru: Derslerime kimler katılmış?\n"
+        f"Cevap: {yayinladigi_dersler if yayinladigi_dersler != 'Yok' else 'Henüz öğrencisi olan dersiniz bulunmamaktadır.'}\n\n"
 
-        f"Kullanıcının gerçek sorusu:\n\"{user_prompt}\"\n\n"
-        f"Yalnızca verilen bilgilere dayanarak açık, anlaşılır ve kibar bir Türkçe yanıt ver. "
-        f"Uydurma bilgi verme, tahmin yapma."
-        f"Kullanıcının gerçek sorusu:\n\"{user_prompt}\"\n\n"
-        f"Yalnızca yukarıdaki bilgilere dayanarak cevap ver. "
-        f"Verilen bilgilere göre:\n"
-        f"- Açık ve kısa konuş\n"
-        f"- Aynı şeyi tekrar etme\n"
-        f"- Gereksiz cümle kurma\n"
+        f"🗣 Kullanıcının gerçek sorusu:\n\"{user_prompt}\"\n\n"
+
+        f"📌 Kurallar:\n"
+        f"- Sadece yukarıdaki bilgilere göre cevap ver\n"
+        f"- Açık, kısa ve kullanıcı dostu bir Türkçe kullan\n"
         f"- Bilgi yoksa 'ilgili bilgi bulunamadı' de\n"
-        f"- Resmiyet değil, yardımcı olmayı amaçlayan kullanıcı dostu bir ton kullan\n"
-
-
+        f"- Uydurma bilgi verme, tahmin yapma\n"
+        f"- Aynı şeyi tekrar etme veya gereksiz cümle kurma\n"
     )
 
     # 🔁 LLM ile iletişim

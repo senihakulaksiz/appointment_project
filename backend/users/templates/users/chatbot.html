@@ -8,7 +8,7 @@
 </head>
 <body>
 
-<!-- Navbar Başlangıcı -->
+<!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark shadow-sm" style="background-color: rgb(215, 235, 255);">
   <div class="container-fluid">
     <a class="navbar-brand fw-bold d-flex align-items-center text-black"
@@ -25,73 +25,49 @@
       <ul class="navbar-nav ms-auto">
 
         {% if request.user.is_student %}
-          <li class="nav-item">
-            <a class="nav-link text-black" href="{% url 'student_profile' %}">👤 Profilim</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-black" href="{% url 'notifications' %}">
-              🔔 Bildirimler
-              {% if unread_notification_count > 0 %}
-                <span class="badge bg-danger">{{ unread_notification_count }}</span>
-              {% endif %}
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-black" href="{% url 'my_lessons' %}">📚 Katıldığım Dersler</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-black" href="{% url 'chat_list' %}">💬 Sohbetler</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-black" href="{% url 'chatbot_page' %}">🤖 Chatbot</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-black" href="{% url 'logout' %}">🚪 Çıkış</a>
-          </li>
+          <li class="nav-item"><a class="nav-link text-black" href="{% url 'student_profile' %}">👤 Profilim</a></li>
+          <li class="nav-item"><a class="nav-link text-black" href="{% url 'notifications' %}">🔔 Bildirimler {% if unread_notification_count > 0 %}<span class="badge bg-danger">{{ unread_notification_count }}</span>{% endif %}</a></li>
+          <li class="nav-item"><a class="nav-link text-black" href="{% url 'my_lessons' %}">📚 Katıldığım Dersler</a></li>
+          <li class="nav-item"><a class="nav-link text-black" href="{% url 'chat_list' %}">💬 Sohbetler</a></li>
+          <li class="nav-item"><a class="nav-link text-black" href="{% url 'chatbot_page' %}">🤖 Chatbot</a></li>
+          <li class="nav-item"><a class="nav-link text-black" href="{% url 'logout' %}">🚪 Çıkış</a></li>
         {% elif request.user.is_teacher %}
-          <li class="nav-item">
-            <a class="nav-link text-black" href="{% url 'teacher_profile' %}">👤 Profilim</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-black" href="{% url 'notifications' %}">
-              🔔 Bildirimler
-              {% if unread_notification_count > 0 %}
-                <span class="badge bg-danger">{{ unread_notification_count }}</span>
-              {% endif %}
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-black" href="{% url 'my_announcements' %}">📄 İlanlarım</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-black" href="{% url 'create_announcement' %}">➕ İlan Yayınla</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-black" href="{% url 'chat_list' %}">💬 Sohbetler</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-black" href="{% url 'chatbot_page' %}">🤖 Chatbot</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-black" href="{% url 'logout' %}">🚪 Çıkış</a>
-          </li>
+          <li class="nav-item"><a class="nav-link text-black" href="{% url 'teacher_profile' %}">👤 Profilim</a></li>
+          <li class="nav-item"><a class="nav-link text-black" href="{% url 'notifications' %}">🔔 Bildirimler {% if unread_notification_count > 0 %}<span class="badge bg-danger">{{ unread_notification_count }}</span>{% endif %}</a></li>
+          <li class="nav-item"><a class="nav-link text-black" href="{% url 'my_announcements' %}">📄 İlanlarım</a></li>
+          <li class="nav-item"><a class="nav-link text-black" href="{% url 'create_announcement' %}">➕ İlan Yayınla</a></li>
+          <li class="nav-item"><a class="nav-link text-black" href="{% url 'chat_list' %}">💬 Sohbetler</a></li>
+          <li class="nav-item"><a class="nav-link text-black" href="{% url 'chatbot_page' %}">🤖 Chatbot</a></li>
+          <li class="nav-item"><a class="nav-link text-black" href="{% url 'logout' %}">🚪 Çıkış</a></li>
         {% endif %}
       </ul>
     </div>
   </div>
 </nav>
-<!-- Navbar Bitişi -->
 
-
-
-<!-- CHATBOT ALANI -->
+<!-- Chatbot Alanı -->
 <div class="container mt-5">
     <h2>Gen AI Chatbot</h2>
 
+
+    <!-- Mesaj Kutusu -->
     <div id="chat-box" style="border: 1px solid #ccc; padding: 10px; height: 400px; overflow-y: scroll; margin-bottom: 20px;">
         <!-- Burada sohbet mesajları birikecek -->
     </div>
+<!-- Hazır Sorular -->
+<div class="mb-3">
+  <label class="form-label fw-bold"> </label>
+  <div class="d-flex flex-wrap gap-2">
+    {% if request.user.is_student %}
+      <button type="button" class="btn btn-outline-primary ready-question">Katıldığım dersler neler?</button>
+      <button type="button" class="btn btn-outline-primary ready-question">Başvurabileceğim ders var mı?</button>
+    {% elif request.user.is_teacher %}
+      <button type="button" class="btn btn-outline-secondary ready-question">Derslerime kimler katılmış?</button>
+    {% endif %}
+  </div>
+</div>
 
+    <!-- Soru Yazma Formu -->
     <form id="ask-form">
         {% csrf_token %}
         <input type="text" id="prompt" placeholder="Bir soru yazın..." class="form-control" required>
@@ -99,7 +75,7 @@
     </form>
 </div>
 
-<!-- JAVASCRIPT -->
+<!-- JavaScript -->
 <script>
 const chatBox = document.getElementById('chat-box');
 
@@ -136,6 +112,15 @@ document.getElementById('ask-form').addEventListener('submit', function(e) {
     });
 
     document.getElementById('prompt').value = '';
+});
+
+// Hazır sorulara tıklanınca otomatik gönder
+document.querySelectorAll('.ready-question').forEach(button => {
+    button.addEventListener('click', () => {
+        const question = button.textContent;
+        document.getElementById('prompt').value = question;
+        document.getElementById('ask-form').requestSubmit();
+    });
 });
 </script>
 
