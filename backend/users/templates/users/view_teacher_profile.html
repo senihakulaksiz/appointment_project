@@ -24,10 +24,21 @@
           <a class="nav-link text-black" href="{% url 'student_profile' %}">👤 Profilim</a>
         </li>
         <li class="nav-item">
+          <a class="nav-link text-black" href="{% url 'notifications' %}">
+            🔔 Bildirimler
+            {% if unread_notification_count > 0 %}
+              <span class="badge bg-danger">{{ unread_notification_count }}</span>
+            {% endif %}
+          </a>
+        </li>
+        <li class="nav-item">
           <a class="nav-link text-black" href="{% url 'my_lessons' %}">📚 Katıldığım Dersler</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link text-black" href="{% url 'chatbot_page' %}">💬 Chatbot</a>
+          <a class="nav-link text-black" href="{% url 'chat_list' %}">💬 Sohbetler</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link text-black" href="{% url 'chatbot_page' %}">🤖 Chatbot</a>
         </li>
         <li class="nav-item">
           <a class="nav-link text-black" href="{% url 'logout' %}">🚪 Çıkış</a>
@@ -55,6 +66,17 @@
           <p class="mt-2">{{ teacher.about|default:"Belirtilmemiş" }}</p>
         </li>
       </ul>
+
+      <!-- ✅ MESAJ GÖNDER BUTONU -->
+      {% if request.user != teacher.user %}
+        <div class="mt-4">
+          <form action="{% url 'send_chat_request' teacher.user.id %}" method="post">
+            {% csrf_token %}
+            <button class="btn btn-outline-primary">💬 Mesaj Gönder</button>
+          </form>
+        </div>
+      {% endif %}
+
     </div>
   </div>
 </div>

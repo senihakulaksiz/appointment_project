@@ -12,6 +12,10 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth import update_session_auth_hash
 from .forms import ApplyToAnnouncementForm
+from .models import ChatRequest, Message
+from .forms import MessageForm, ChatRequestForm
+from django.db.models import Q
+from .models import Notification
 
 
 User = get_user_model()
@@ -431,3 +435,170 @@ def my_announcements(request):
         'pending_announcements': pending_announcements,
     }
     return render(request, 'users/my_announcements.html', context)
+
+
+@login_required
+def send_chat_request(request, teacher_id):
+    receiver = CustomUser.objects.get(id=teacher_id)
+    return redirect('chat_with_user', user_id=receiver.id)
+
+
+@login_required
+def chat_requests(request):
+    pending_requests = ChatRequest.objects.filter(receiver=request.user, is_accepted=False)
+    return render(request, 'users/message_requests.html', {'pending_requests': pending_requests})
+
+
+@login_required
+def accept_chat_request(request, request_id):
+    try:
+        chat_request = ChatRequest.objects.get(id=request_id, receiver=request.user)
+        chat_request.is_accepted = True
+        chat_request.save()
+        messages.success(request, "Mesaj isteği kabul edildi.")
+    except ChatRequest.DoesNotExist:
+        messages.error(request, "İstek bulunamadı.")
+    return redirect('chat_requests')
+
+
+@login_required
+def chat_with_user(request, user_id):
+    other_user = CustomUser.objects.get(id=user_id)
+
+    # Sohbet geçmişi
+    messages_qs = Message.objects.filter(
+        sender__in=[request.user, other_user],
+        receiver__in=[request.user, other_user]
+    ).order_by('timestamp')
+
+    # ChatRequest kontrolü
+    try:
+        chat_request = ChatRequest.objects.get(
+            sender__in=[request.user, other_user],
+            receiver__in=[request.user, other_user]
+        )
+        is_accepted = chat_request.is_accepted
+    except ChatRequest.DoesNotExist:
+        chat_request = None
+        is_accepted = False
+
+    is_sender_student = request.user.is_student and (chat_request is None or chat_request.sender == request.user)
+    student_sent_message = messages_qs.filter(sender=request.user).exists()
+
+    if request.method == 'POST':
+        form = MessageForm(request.POST)
+        if form.is_valid():
+            # Eğer öğrenci ilk mesajı atıyorsa, ChatRequest yarat
+            if not chat_request and request.user.is_student:
+                chat_request = ChatRequest.objects.create(
+                    sender=request.user,
+                    receiver=other_user,
+                    is_accepted=False
+                )
+                is_accepted = False
+                is_sender_student = True
+
+                # 🟡 Mesaj isteği bildirimi
+                Notification.objects.create(
+                    user=other_user,
+                    message=f"{request.user.username} adlı öğrenci size mesaj atmak istiyor.",
+                    link=f"/users/chat/{request.user.id}/"
+                )
+
+            # Öğretmen istek onaylamadan yazamaz
+            if request.user.is_teacher and not is_accepted:
+                messages.error(request, "Öğrenci isteğini kabul etmeden mesaj gönderemezsiniz.")
+            else:
+                message = form.save(commit=False)
+                message.sender = request.user
+                message.receiver = other_user
+                message.save()
+
+                # 🟢 Normal mesaj bildirimi
+                Notification.objects.create(
+                    user=other_user,
+                    message=f"{request.user.username} size bir mesaj gönderdi.",
+                    link=f"/users/chat/{request.user.id}/"
+                )
+
+                # 💡 Bildirim oluştur (sadece öğrenciden gelen ilk mesaj için)
+                if request.user.is_student and chat_request and not is_accepted and not Notification.objects.filter(user=other_user, message__icontains="size bir mesaj isteği gönderdi").exists():
+                    Notification.objects.create(
+                        user=other_user,
+                        message=f"{request.user.username} size bir mesaj isteği gönderdi.",
+                        is_read=False
+                    )
+
+                return redirect('chat_with_user', user_id=other_user.id)
+    else:
+        form = MessageForm()
+
+    return render(request, 'users/chat.html', {
+        'messages': messages_qs,
+        'form': form,
+        'active_user': other_user,
+        'users': get_chat_partners(request.user),
+        'is_accepted': is_accepted,
+        'awaiting_approval': not is_accepted and is_sender_student and student_sent_message
+    })
+
+
+def get_chat_partners(user):
+    accepted = ChatRequest.objects.filter(
+        (Q(sender=user) | Q(receiver=user)),
+        is_accepted=True
+    )
+    partner_ids = set()
+    for r in accepted:
+        partner_ids.add(r.sender.id)
+        partner_ids.add(r.receiver.id)
+    partner_ids.discard(user.id)
+    return CustomUser.objects.filter(id__in=partner_ids)
+
+@login_required
+def chat_list(request):
+    users = get_chat_partners(request.user)
+
+    # Her kullanıcı için son mesajı ekle
+    user_data = []
+    for u in users:
+        last_msg = Message.objects.filter(
+            sender__in=[request.user, u],
+            receiver__in=[request.user, u]
+        ).order_by('-timestamp').first()
+        user_data.append({
+            'user': u,
+            'last_message': last_msg.content if last_msg else None,
+            'last_message_time': last_msg.timestamp if last_msg else None,
+        })
+
+    return render(request, 'users/chat_list.html', {
+    'users_data': user_data,
+    'users': [entry['user'] for entry in user_data]  # 👈 Bu satırı ekle
+    })
+
+
+@login_required
+def notification_list(request):
+    notifications = Notification.objects.filter(user=request.user).order_by('-timestamp')
+    return render(request, 'users/notifications.html', {'notifications': notifications})
+
+
+@login_required
+def notifications_view(request):
+    notifications = Notification.objects.filter(user=request.user).order_by('-timestamp')
+    notifications.update(is_read=True)
+    return render(request, 'users/notifications.html', {'notifications': notifications})
+
+@login_required
+def go_to_notification(request, notification_id):
+    try:
+        notification = Notification.objects.get(id=notification_id, user=request.user)
+        notification.is_read = True
+        notification.save()
+
+        # Link varsa oraya yönlendir, yoksa fallback
+        return redirect(notification.link or 'notification_list')
+    except Notification.DoesNotExist:
+        messages.error(request, "Bildirim bulunamadı.")
+        return redirect('notification_list')

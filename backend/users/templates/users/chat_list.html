@@ -1,0 +1,130 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Sohbetler</title>
+  <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+</head>
+<body>
+
+<!-- Navbar Başlangıcı -->
+<nav class="navbar navbar-expand-lg navbar-dark shadow-sm" style="background-color: rgb(215, 235, 255);">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold d-flex align-items-center text-black"
+       href="{% if request.user.is_student %}{% url 'student_dashboard' %}{% else %}{% url 'teacher_dashboard' %}{% endif %}">
+      🎓 <span class="ms-2">
+        {% if request.user.is_student %}Öğrenci Paneli{% else %}Öğretmen Paneli{% endif %}
+      </span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+
+        {% if request.user.is_student %}
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'student_profile' %}">👤 Profilim</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'notifications' %}">
+              🔔 Bildirimler
+              {% if unread_notification_count > 0 %}
+                <span class="badge bg-danger">{{ unread_notification_count }}</span>
+              {% endif %}
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'my_lessons' %}">📚 Katıldığım Dersler</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'chat_list' %}">💬 Sohbetler</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'chatbot_page' %}">🤖 Chatbot</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'logout' %}">🚪 Çıkış</a>
+          </li>
+        {% elif request.user.is_teacher %}
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'teacher_profile' %}">👤 Profilim</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'notifications' %}">
+              🔔 Bildirimler
+              {% if unread_notification_count > 0 %}
+                <span class="badge bg-danger">{{ unread_notification_count }}</span>
+              {% endif %}
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'my_announcements' %}">📄 İlanlarım</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'create_announcement' %}">➕ İlan Yayınla</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'chat_list' %}">💬 Sohbetler</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'chatbot_page' %}">🤖 Chatbot</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'logout' %}">🚪 Çıkış</a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+<!-- Navbar Bitişi -->
+
+
+
+<div class="container py-5">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="ms-5">💬 Sohbetler</h2>
+
+    {% if request.user.is_teacher %}
+      <a href="{% url 'chat_requests' %}" class="btn btn-outline-secondary me-5">📥 Mesaj İstekleri</a>
+    {% endif %}
+  </div>
+
+  <div class="mx-auto mt-5" style="max-width: 600px;">
+  {% if users %}
+    <div class="list-group">
+      {% for entry in users_data %}
+        <a href="{% url 'chat_with_user' entry.user.id %}"
+           class="list-group-item list-group-item-action {% if entry.user == active_user %}active{% endif %}"
+           style="margin-bottom: 1rem; border: 1.5px solid #999;">
+           <div class="d-flex justify-content-between align-items-center">
+
+            <!-- Sol kısım: avatar + kullanıcı adı + mesaj -->
+            <div class="d-flex align-items-center">
+              <span class="me-2">👤</span>
+              <div>
+                <strong style="color: black;">{{ entry.user.username }}</strong><br>
+                <small class="text-muted">{{ entry.last_message|default:"Henüz mesaj yok" }}</small>
+              </div>
+            </div>
+
+            <!-- Sağ kısım: Zaman -->
+            {% if entry.last_message_time %}
+              <small class="text-muted">{{ entry.last_message_time|date:"H:i" }}</small>
+            {% endif %}
+          </div>
+        </a>
+      {% empty %}
+        <p class="text-muted">Henüz sohbet başlatılmadı.</p>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted">Henüz hiçbir kullanıcıyla mesajlaşmadınız.</p>
+  {% endif %}
+</div>
+</div>
+</body>
+</html>

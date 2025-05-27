@@ -8,11 +8,14 @@
 </head>
 <body>
 
-<!-- NAVBAR -->
+<!-- Navbar Başlangıcı -->
 <nav class="navbar navbar-expand-lg navbar-dark shadow-sm" style="background-color: rgb(215, 235, 255);">
   <div class="container-fluid">
-    <a class="navbar-brand fw-bold d-flex align-items-center text-black" href="{% url 'teacher_dashboard' %}">
-      📘 <span class="ms-2">Öğretmen Paneli</span>
+    <a class="navbar-brand fw-bold d-flex align-items-center text-black"
+       href="{% if request.user.is_student %}{% url 'student_dashboard' %}{% else %}{% url 'teacher_dashboard' %}{% endif %}">
+      🎓 <span class="ms-2">
+        {% if request.user.is_student %}Öğrenci Paneli{% else %}Öğretmen Paneli{% endif %}
+      </span>
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
@@ -20,25 +23,66 @@
 
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto">
-        <li class="nav-item">
-          <a class="nav-link text-black" href="{% url 'teacher_profile' %}">👤 Profilim</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-black" href="{% url 'my_announcements' %}">📄 İlanlarım</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-black" href="{% url 'create_announcement' %}">➕ İlan Yayınla</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-black" href="{% url 'chatbot_page' %}">💬 Chatbot</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link text-black" href="{% url 'logout' %}">🚪 Çıkış</a>
-        </li>
+
+        {% if request.user.is_student %}
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'student_profile' %}">👤 Profilim</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'notifications' %}">
+              🔔 Bildirimler
+              {% if unread_notification_count > 0 %}
+                <span class="badge bg-danger">{{ unread_notification_count }}</span>
+              {% endif %}
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'my_lessons' %}">📚 Katıldığım Dersler</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'chat_list' %}">💬 Sohbetler</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'chatbot_page' %}">🤖 Chatbot</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'logout' %}">🚪 Çıkış</a>
+          </li>
+        {% elif request.user.is_teacher %}
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'teacher_profile' %}">👤 Profilim</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'notifications' %}">
+              🔔 Bildirimler
+              {% if unread_notification_count > 0 %}
+                <span class="badge bg-danger">{{ unread_notification_count }}</span>
+              {% endif %}
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'my_announcements' %}">📄 İlanlarım</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'create_announcement' %}">➕ İlan Yayınla</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'chat_list' %}">💬 Sohbetler</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'chatbot_page' %}">🤖 Chatbot</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'logout' %}">🚪 Çıkış</a>
+          </li>
+        {% endif %}
       </ul>
     </div>
   </div>
 </nav>
+<!-- Navbar Bitişi -->
+
+
 
 <!-- CHATBOT ALANI -->
 <div class="container mt-5">

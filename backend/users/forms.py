@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from .models import CustomUser, Teacher, Student, Lesson, LessonAnnouncement
+from .models import Message, ChatRequest
 
 class CustomUserCreationForm(UserCreationForm):
     email = forms.EmailField(required=True)
@@ -58,3 +59,21 @@ class ApplyToAnnouncementForm(forms.ModelForm):
             'student_class_level': forms.TextInput(attrs={'class': 'form-control'}),
             'student_request_detail': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
         }
+
+
+class MessageForm(forms.ModelForm):
+    class Meta:
+        model = Message
+        fields = ['content']
+        widgets = {
+            'content': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Mesajınızı yazın...',
+                'autocomplete': 'off'
+            }),
+        }
+
+class ChatRequestForm(forms.ModelForm):
+    class Meta:
+        model = ChatRequest
+        fields = []  # formdan veri alınmayacak, sadece butonla tetiklenecek

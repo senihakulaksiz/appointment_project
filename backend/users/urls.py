@@ -23,11 +23,13 @@ urlpatterns = [
     path('teacher/profile/<int:teacher_id>/', views.view_teacher_profile, name='view_teacher_profile'),
     path('teacher/my-announcements/', views.my_announcements, name='my_announcements'),
     path('teacher/delete-announcement/<int:announcement_id>/', views.delete_announcement, name='delete_announcement'),
-
-
-
-
-
+    path('chat/request/<int:teacher_id>/', views.send_chat_request, name='send_chat_request'),
+    path('chat/requests/', views.chat_requests, name='chat_requests'),
+    path('chat/accept/<int:request_id>/', views.accept_chat_request, name='accept_chat_request'),
+    path('chat/<int:user_id>/', views.chat_with_user, name='chat_with_user'),
+    path('chats/', views.chat_list, name='chat_list'),
+    path('notifications/', views.notifications_view, name='notifications'),
+    path('notifications/go/<int:notification_id>/', views.go_to_notification, name='go_to_notification'),
 
 
 

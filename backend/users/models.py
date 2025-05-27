@@ -65,3 +65,35 @@ class LessonAnnouncement(models.Model):
 
     def __str__(self):
         return self.title
+
+class ChatRequest(models.Model):
+    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sent_chat_requests')
+    receiver = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='received_chat_requests')
+    is_accepted = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('sender', 'receiver')  # aynı kişiye tekrar istek gönderilemesin
+
+    def __str__(self):
+        return f"{self.sender.username} → {self.receiver.username} ({'Kabul Edildi' if self.is_accepted else 'Bekliyor'})"
+
+
+class Message(models.Model):
+    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sent_messages')
+    receiver = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='received_messages')
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.sender.username} → {self.receiver.username}: {self.content[:30]}"
+
+class Notification(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='notifications')
+    message = models.CharField(max_length=255)
+    is_read = models.BooleanField(default=False)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    link = models.URLField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {'OKUNDU' if self.is_read else 'YENİ'}"

@@ -1,0 +1,107 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Bildirimler</title>
+  <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+</head>
+<body>
+
+<!-- Navbar Başlangıcı -->
+<nav class="navbar navbar-expand-lg navbar-dark shadow-sm" style="background-color: rgb(215, 235, 255);">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold d-flex align-items-center text-black"
+       href="{% if request.user.is_student %}{% url 'student_dashboard' %}{% else %}{% url 'teacher_dashboard' %}{% endif %}">
+      🎓 <span class="ms-2">
+        {% if request.user.is_student %}Öğrenci Paneli{% else %}Öğretmen Paneli{% endif %}
+      </span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto">
+
+        {% if request.user.is_student %}
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'student_profile' %}">👤 Profilim</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'notifications' %}">
+              🔔 Bildirimler
+              {% if unread_notification_count > 0 %}
+                <span class="badge bg-danger">{{ unread_notification_count }}</span>
+              {% endif %}
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'my_lessons' %}">📚 Katıldığım Dersler</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'chat_list' %}">💬 Sohbetler</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'chatbot_page' %}">🤖 Chatbot</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'logout' %}">🚪 Çıkış</a>
+          </li>
+        {% elif request.user.is_teacher %}
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'teacher_profile' %}">👤 Profilim</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'notifications' %}">
+              🔔 Bildirimler
+              {% if unread_notification_count > 0 %}
+                <span class="badge bg-danger">{{ unread_notification_count }}</span>
+              {% endif %}
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'my_announcements' %}">📄 İlanlarım</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'create_announcement' %}">➕ İlan Yayınla</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'chat_list' %}">💬 Sohbetler</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'chatbot_page' %}">🤖 Chatbot</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-black" href="{% url 'logout' %}">🚪 Çıkış</a>
+          </li>
+        {% endif %}
+
+
+      </ul>
+    </div>
+  </div>
+</nav>
+<!-- Navbar Bitişi -->
+
+
+<div class="container py-5">
+  <h2 class="mb-4">🔔 Bildirimler</h2>
+
+  {% if notifications %}
+    <ul class="list-group">
+      {% for notification in notifications %}
+        <a href="{% url 'go_to_notification' notification.id %}" class="text-decoration-none text-dark">
+          <li class="list-group-item d-flex justify-content-between align-items-center {% if not notification.is_read %}list-group-item-warning{% endif %}">
+            {{ notification.message }}
+            <span class="badge bg-secondary">{{ notification.timestamp|date:"d M H:i" }}</span>
+          </li>
+        </a>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="text-muted">Henüz hiçbir bildiriminiz yok.</p>
+  {% endif %}
+</div>
+</body>
+</html>
